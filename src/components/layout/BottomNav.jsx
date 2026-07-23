@@ -1,12 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, FileText, ShoppingCart, MoreHorizontal } from 'lucide-react';
+import { LayoutDashboard, Package, FileText, Layers, MoreHorizontal } from 'lucide-react';
 
 const BOTTOM_ITEMS = [
   { to: '/', icon: LayoutDashboard, label: 'Home' },
   { to: '/products', icon: Package, label: 'Products' },
   { to: '/invoices', icon: FileText, label: 'Invoices' },
-  { to: '/sales', icon: ShoppingCart, label: 'Sales' },
+  { to: '/inventory', icon: Layers, label: 'Inventory' },
   { to: '/settings', icon: MoreHorizontal, label: 'More' },
 ];
 

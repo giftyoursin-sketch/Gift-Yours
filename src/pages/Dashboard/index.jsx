@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   TrendingUp, TrendingDown, ShoppingCart, Package,
   AlertTriangle, Plus, FileText, RefreshCw, ArrowRight,
-  IndianRupee, Layers, Users, Receipt
+  IndianRupee, Layers, Users, Receipt, X
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -15,16 +15,23 @@ import { format, subDays, startOfMonth, eachDayOfInterval } from 'date-fns';
 const fmt = (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`;
 
 const QUICK_ACTIONS = [
-  { label: 'New Sale', icon: ShoppingCart, to: '/sales', color: 'var(--accent)', bg: 'var(--accent-light)' },
-  { label: 'New Invoice', icon: FileText, to: '/invoices/new', color: 'var(--primary)', bg: 'rgba(30,27,75,0.08)' },
+  { label: 'New Invoice', icon: FileText, to: '/invoices/new', color: 'var(--primary)', bg: 'var(--primary-alpha-10)' },
   { label: 'Add Product', icon: Package, to: '/products', color: 'var(--success)', bg: 'var(--success-light)' },
   { label: 'Add Expense', icon: TrendingDown, to: '/expenses', color: 'var(--warning)', bg: 'var(--warning-light)' },
 ];
 
 export default function Dashboard() {
-  const { sales, expenses, products, customers, getMetrics } = useApp();
+  const { sales, expenses, products, invoices, getMetrics } = useApp();
   const metrics = getMetrics();
   const navigate = useNavigate();
+  const [activeModal, setActiveModal] = useState(null);
+
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const monthStr = format(new Date(), 'yyyy-MM');
+  const todaySalesList = sales.filter(s => s.date === todayStr);
+  const todayExpenseList = expenses.filter(e => e.date === todayStr);
+  const monthSalesList = sales.filter(s => s.date?.startsWith(monthStr));
+  const monthExpenseList = expenses.filter(e => e.date?.startsWith(monthStr));
 
   // Build last 14 days chart data
   const chartData = useMemo(() => {
@@ -60,14 +67,14 @@ export default function Dashboard() {
   }, [sales, expenses]);
 
   const STATS = [
-    { label: "Today's Sales", value: fmt(metrics.todayIncome), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: `${metrics.todaySalesCount} orders` },
-    { label: "Today's Expenses", value: fmt(metrics.todayExpenseTotal), icon: TrendingDown, color: 'var(--error)', bg: 'var(--error-light)', sub: 'Spent today' },
-    { label: "Today's Profit", value: fmt(metrics.todayProfit), icon: IndianRupee, color: metrics.todayProfit >= 0 ? 'var(--primary)' : 'var(--error)', bg: 'rgba(30,27,75,0.08)', sub: 'Net today' },
-    { label: 'Monthly Revenue', value: fmt(metrics.monthIncome), icon: Receipt, color: 'var(--accent)', bg: 'var(--accent-light)', sub: `${metrics.monthSalesCount} orders` },
-    { label: 'Monthly Profit', value: fmt(metrics.monthProfit), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: 'This month' },
-    { label: 'Inventory Value', value: fmt(metrics.totalInventoryValue), icon: Layers, color: 'var(--info)', bg: 'var(--info-light)', sub: `${products.length} products` },
-    { label: 'Low Stock', value: metrics.lowStockProducts.length, icon: AlertTriangle, color: 'var(--warning)', bg: 'var(--warning-light)', sub: 'Need restock' },
-    { label: 'Total Customers', value: customers.length, icon: Users, color: 'var(--primary)', bg: 'rgba(30,27,75,0.08)', sub: 'Registered' },
+    { label: "Today's Sales", value: fmt(metrics.todayIncome), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: `${metrics.todaySalesCount} orders`, onClick: () => setActiveModal('today_sales') },
+    { label: "Today's Expenses", value: fmt(metrics.todayExpenseTotal), icon: TrendingDown, color: 'var(--error)', bg: 'var(--error-light)', sub: 'Spent today', onClick: () => setActiveModal('today_expenses') },
+    { label: "Today's Profit", value: fmt(metrics.todayProfit), icon: IndianRupee, color: metrics.todayProfit >= 0 ? 'var(--primary)' : 'var(--error)', bg: 'var(--primary-alpha-10)', sub: 'Net today', onClick: () => setActiveModal('today_profit') },
+    { label: 'Monthly Revenue', value: fmt(metrics.monthIncome), icon: Receipt, color: 'var(--accent)', bg: 'var(--accent-light)', sub: `${metrics.monthSalesCount} orders`, onClick: () => setActiveModal('month_sales') },
+    { label: 'Monthly Profit', value: fmt(metrics.monthProfit), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: 'This month', onClick: () => setActiveModal('month_profit') },
+    { label: 'Inventory Value', value: fmt(metrics.totalInventoryValue), icon: Layers, color: 'var(--info)', bg: 'var(--info-light)', sub: `${products.length} products`, to: '/inventory' },
+    { label: 'Low Stock', value: metrics.lowStockProducts.length, icon: AlertTriangle, color: 'var(--warning)', bg: 'var(--warning-light)', sub: 'Need restock', to: '/inventory' },
+    { label: 'Total Invoices', value: invoices.length, icon: FileText, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: 'Invoices created', to: '/invoices' },
   ];
 
   return (
@@ -107,16 +114,31 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
-        {STATS.map(({ label, value, icon: Icon, color, bg, sub }) => (
-          <div key={label} className="stat-card">
-            <div className="stat-icon" style={{ background: bg, color }}>
-              <Icon size={20} />
+        {STATS.map(({ label, value, icon: Icon, color, bg, sub, to, onClick }) => {
+          const content = (
+            <>
+              <div className="stat-icon" style={{ background: bg, color }}>
+                <Icon size={20} />
+              </div>
+              <div className="stat-value" style={{ color }}>{value}</div>
+              <div className="stat-label">{label}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{sub}</div>
+            </>
+          );
+          return to ? (
+            <Link key={label} to={to} className="stat-card card-hover" style={{ textDecoration: 'none', display: 'block' }}>
+              {content}
+            </Link>
+          ) : onClick ? (
+            <div key={label} className="stat-card card-hover" onClick={onClick} style={{ cursor: 'pointer' }}>
+              {content}
             </div>
-            <div className="stat-value" style={{ color }}>{value}</div>
-            <div className="stat-label">{label}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{sub}</div>
-          </div>
-        ))}
+          ) : (
+            <div key={label} className="stat-card">
+              {content}
+            </div>
+          );
+        })}
       </div>
 
       {/* Charts Row */}
@@ -243,6 +265,94 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Modals for Breakdown */}
+      {activeModal && (
+        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+          <div className="modal" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>
+                {activeModal.startsWith('month') 
+                  ? (activeModal.endsWith('sales') ? "This Month's Sales" : activeModal.endsWith('profit') ? "This Month's Profit Breakdown" : "This Month's Expenses")
+                  : (activeModal.endsWith('sales') ? "Today's Sales" : activeModal.endsWith('profit') ? "Today's Profit Breakdown" : "Today's Expenses")
+                }
+              </h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setActiveModal(null)}><X size={18} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '70vh', overflowY: 'auto' }}>
+              
+              {(activeModal.endsWith('profit') || activeModal.endsWith('sales')) && (
+                <div>
+                  <h4 style={{ color: 'var(--success)', marginBottom: '0.75rem', fontSize: '0.9375rem', fontWeight: 600 }}>Income (From Invoices)</h4>
+                  {(activeModal.startsWith('month') ? monthSalesList : todaySalesList).length === 0 ? <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No sales found.</p> : (
+                    <div className="table-responsive">
+                      <table className="table">
+                        <thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th></tr></thead>
+                        <tbody>
+                          {(activeModal.startsWith('month') ? monthSalesList : todaySalesList).map(s => (
+                            <tr key={s.id}>
+                              <td>#{s.id?.slice(-4) || s.invoiceId?.slice(-4)}</td>
+                              <td>{s.customerName || 'Walk-in'}</td>
+                              <td style={{ fontSize: '0.8125rem' }}>{format(new Date(s.date), 'dd MMM')}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--success)' }}>{fmt(s.total)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {activeModal.endsWith('profit') && <h4 style={{ color: 'var(--error)', marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.9375rem', fontWeight: 600 }}>Expenses</h4>}
+                </div>
+              )}
+
+              {(activeModal.endsWith('expenses') || activeModal.endsWith('profit')) && (
+                <div>
+                  {(activeModal.startsWith('month') ? monthExpenseList : todayExpenseList).length === 0 ? <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No expenses found.</p> : (
+                    <div className="table-responsive">
+                      <table className="table">
+                        <thead><tr><th>Expense</th><th>Category</th><th>Date</th><th>Amount</th></tr></thead>
+                        <tbody>
+                          {(activeModal.startsWith('month') ? monthExpenseList : todayExpenseList).map(e => (
+                            <tr key={e.id}>
+                              <td>{e.title}</td>
+                              <td><span className="badge badge-secondary">{e.category}</span></td>
+                              <td style={{ fontSize: '0.8125rem' }}>{format(new Date(e.date), 'dd MMM')}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--error)' }}>{fmt(e.amount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div style={{ 
+                marginTop: '1rem', padding: '1rem', background: 'var(--surface-2)', 
+                borderRadius: '8px', display: 'flex', justifyContent: 'space-between', 
+                alignItems: 'center', border: '1px solid var(--surface-border)' 
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Total {activeModal.endsWith('expenses') ? 'Expenses' : activeModal.endsWith('sales') ? 'Sales' : 'Net Profit'}:
+                </span>
+                <span style={{ 
+                  fontSize: '1.25rem', fontWeight: 800,
+                  color: activeModal.endsWith('expenses') ? 'var(--error)' : activeModal.endsWith('sales') ? 'var(--success)' : (activeModal.startsWith('month') ? metrics.monthProfit : metrics.todayProfit) >= 0 ? 'var(--success)' : 'var(--error)' 
+                }}>
+                  {fmt(
+                    activeModal.endsWith('expenses') 
+                      ? (activeModal.startsWith('month') ? metrics.monthExpenseTotal : metrics.todayExpenseTotal)
+                      : activeModal.endsWith('sales') 
+                        ? (activeModal.startsWith('month') ? metrics.monthIncome : metrics.todayIncome)
+                        : (activeModal.startsWith('month') ? metrics.monthProfit : metrics.todayProfit)
+                  )}
+                </span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

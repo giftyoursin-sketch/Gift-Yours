@@ -25,14 +25,19 @@ export default function ProductForm({ product, onClose, onSave }) {
     e.preventDefault();
     if (!form.name.trim()) return;
     setSaving(true);
-    await onSave({
-      ...form,
-      purchasePrice: parseFloat(form.purchasePrice) || 0,
-      sellingPrice: parseFloat(form.sellingPrice) || 0,
-      stock: parseInt(form.stock) || 0,
-      minStock: parseInt(form.minStock) || 5,
-    });
-    setSaving(false);
+    try {
+      await onSave({
+        ...form,
+        purchasePrice: parseFloat(form.purchasePrice) || 0,
+        sellingPrice: parseFloat(form.sellingPrice) || 0,
+        stock: parseInt(form.stock) || 0,
+        minStock: parseInt(form.minStock) || 5,
+      });
+    } catch (err) {
+      console.error('Failed to save product:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -48,7 +53,15 @@ export default function ProductForm({ product, onClose, onSave }) {
           <button className="btn btn-ghost btn-icon" onClick={onClose}><X size={18} /></button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form 
+          onSubmit={handleSubmit} 
+          style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+              e.preventDefault();
+            }
+          }}
+        >
           <div className="modal-body">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {/* Product Name */}

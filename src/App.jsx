@@ -7,10 +7,8 @@ import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Inventory from './pages/Inventory';
-import Sales from './pages/Sales';
 import Invoices from './pages/Invoices';
 import InvoiceBuilder from './pages/Invoices/InvoiceBuilder';
-import Customers from './pages/Customers';
 import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
@@ -32,11 +30,9 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="products" element={<Products />} />
             <Route path="inventory" element={<Inventory />} />
-            <Route path="sales" element={<Sales />} />
             <Route path="invoices" element={<Invoices />} />
             <Route path="invoices/new" element={<InvoiceBuilder />} />
             <Route path="invoices/:id/edit" element={<InvoiceBuilder />} />
-            <Route path="customers" element={<Customers />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />

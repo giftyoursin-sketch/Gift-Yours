@@ -7,6 +7,13 @@ const AppContext = createContext(null);
 const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 const today = () => format(new Date(), 'yyyy-MM-dd');
 
+const safeParseJSON = (val) => {
+  if (typeof val === 'string') {
+    try { return JSON.parse(val); } catch(e) { return []; }
+  }
+  return val || [];
+};
+
 // ─── DB ↔ JS Transforms ──────────────────────────────────────
 // Products: snake_case DB → camelCase JS
 const productFromDB = (p) => !p ? null : ({
@@ -27,7 +34,7 @@ const productToDB = (p) => ({
 // Sales: snake_case DB → camelCase JS
 const saleFromDB = (s) => !s ? null : ({
   id: s.id, customerId: s.customer_id, customerName: s.customer_name,
-  items: s.items || [], total: s.total, paymentMethod: s.payment_method,
+  items: safeParseJSON(s.items), total: s.total, paymentMethod: s.payment_method,
   date: s.date, notes: s.notes, createdAt: s.created_at,
 });
 const saleToDB = (s) => ({
@@ -41,7 +48,7 @@ const invoiceFromDB = (i) => !i ? null : ({
   id: i.id, invoiceNumber: i.invoice_number, customerId: i.customer_id,
   customerName: i.customer_name, customerPhone: i.customer_phone,
   customerAddress: i.customer_address, date: i.date, dueDate: i.due_date,
-  items: i.items || [], subtotal: i.subtotal, discount: i.discount,
+  items: safeParseJSON(i.items), subtotal: i.subtotal, discount: i.discount,
   discountAmt: i.discount_amt, grandTotal: i.grand_total, status: i.status,
   paymentMethod: i.payment_method, notes: i.notes, terms: i.terms,
   createdAt: i.created_at,
@@ -112,6 +119,7 @@ function reducer(state, action) {
     case 'SET_STOCK_HISTORY': return { ...state, stockHistory: action.payload };
     case 'SET_SETTINGS': return { ...state, settings: { ...state.settings, ...action.payload } };
     case 'ADD_NOTIFICATION': return { ...state, notifications: [action.payload, ...state.notifications].slice(0, 20) };
+    case 'REMOVE_NOTIFICATION': return { ...state, notifications: state.notifications.filter(n => n.id !== action.payload) };
     case 'SET_DB_ERROR': return { ...state, dbError: true, loading: false };
     default: return state;
   }
@@ -183,6 +191,10 @@ export function AppProvider({ children }) {
 
   const notify = useCallback((message, type = 'info') => {
     dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateId(), message, type, timestamp: new Date().toISOString() } });
+  }, []);
+
+  const removeNotification = useCallback((id) => {
+    dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
   }, []);
 
   // ─── PRODUCTS ────────────────────────────────────────────────
@@ -319,9 +331,21 @@ export function AppProvider({ children }) {
 
     const { data: all } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
     dispatch({ type: 'SET_INVOICES', payload: (all || []).map(invoiceFromDB) });
+    
+    // Auto-create Sale
+    await addSale({
+      customerId: invoice.customerId,
+      customerName: invoice.customerName,
+      items: invoice.items,
+      total: invoice.grandTotal,
+      paymentMethod: invoice.paymentMethod,
+      date: invoice.date,
+      notes: `Generated from Invoice ${invoice.invoiceNumber}${invoice.notes ? ` - ${invoice.notes}` : ''}`
+    });
+
     notify('Invoice created', 'success');
     return invoice;
-  }, [state.settings, notify]);
+  }, [state.settings, notify, addSale]);
 
   const updateInvoice = useCallback(async (id, data) => {
     const existing = state.invoices.find(i => i.id === id);
@@ -422,7 +446,7 @@ export function AppProvider({ children }) {
     // Settings
     saveSetting, saveSettings,
     // Utils
-    getMetrics, notify,
+    getMetrics, notify, removeNotification,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

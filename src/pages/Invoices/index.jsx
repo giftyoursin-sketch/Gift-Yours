@@ -38,7 +38,7 @@ export default function Invoices() {
       {/* Summary */}
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginBottom: '1.25rem' }}>
         {[
-          { label: 'Total Invoices', value: invoices.length, color: 'var(--primary)', bg: 'rgba(30,27,75,0.08)' },
+          { label: 'Total Invoices', value: invoices.length, color: 'var(--primary)', bg: 'var(--primary-alpha-10)' },
           { label: 'Paid', value: `₹${totalPaid.toLocaleString('en-IN')}`, color: 'var(--success)', bg: 'var(--success-light)' },
           { label: 'Pending', value: `₹${totalPending.toLocaleString('en-IN')}`, color: 'var(--warning)', bg: 'var(--warning-light)' },
         ].map(s => (

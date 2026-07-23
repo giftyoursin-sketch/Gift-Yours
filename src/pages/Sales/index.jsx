@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Search, Trash2, Eye, ShoppingCart, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { format } from 'date-fns';
 
@@ -179,10 +180,17 @@ export default function Sales() {
   const [search, setSearch] = useState('');
   const [viewSale, setViewSale] = useState(null);
 
+  const [searchParams] = useSearchParams();
+  const dateFilter = searchParams.get('date');
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+
   const filtered = useMemo(() =>
-    sales.filter(s => !search || s.id?.includes(search) || s.customerName?.toLowerCase().includes(search.toLowerCase()))
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  , [sales, search]);
+    sales.filter(s => {
+      const matchSearch = !search || s.id?.includes(search) || s.customerName?.toLowerCase().includes(search.toLowerCase());
+      const matchDate = dateFilter === 'today' ? s.date === todayStr : true;
+      return matchSearch && matchDate;
+    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  , [sales, search, dateFilter, todayStr]);
 
   const totalRevenue = sales.reduce((a, s) => a + (s.total || 0), 0);
 
@@ -232,7 +240,7 @@ export default function Sales() {
                   <tr key={s.id}>
                     <td style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--primary)' }}>#{s.id?.slice(-6).toUpperCase()}</td>
                     <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{s.date}</td>
-                    <td style={{ fontSize: '0.875rem' }}>{customer?.name || 'Walk-in'}</td>
+                    <td style={{ fontSize: '0.875rem' }}>{customer?.name || s.customerName || 'Walk-in'}</td>
                     <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{(s.items || []).length} item(s)</td>
                     <td><span className="badge badge-primary">{s.paymentMethod}</span></td>
                     <td style={{ fontWeight: 700, fontSize: '0.9375rem' }}>₹{(s.total || 0).toLocaleString('en-IN')}</td>
@@ -278,7 +286,7 @@ export default function Sales() {
             <div className="drawer-body">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>CUSTOMER</div><div style={{ fontWeight: 600 }}>{customers.find(c => c.id === viewSale.customerId)?.name || 'Walk-in'}</div></div>
+                  <div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>CUSTOMER</div><div style={{ fontWeight: 600 }}>{customers.find(c => c.id === viewSale.customerId)?.name || viewSale.customerName || 'Walk-in'}</div></div>
                   <div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>PAYMENT</div><div style={{ fontWeight: 600 }}>{viewSale.paymentMethod}</div></div>
                 </div>
                 <div>

@@ -10,20 +10,21 @@ const ICONS = {
 };
 
 export default function ToastContainer() {
-  const { notifications, dispatch } = useApp();
+  const { notifications, removeNotification } = useApp();
   const timers = useRef({});
 
   useEffect(() => {
     notifications.forEach(n => {
       if (!timers.current[n.id]) {
         timers.current[n.id] = setTimeout(() => {
-          // Auto-dismiss handled by notification age
+          removeNotification(n.id);
+          delete timers.current[n.id];
         }, 4000);
       }
     });
-  }, [notifications]);
+  }, [notifications, removeNotification]);
 
-  // Show only the last 4, and auto-remove after 4s by filtering
+  // Show only the last 4
   const visible = notifications.slice(0, 4);
 
   return (
