@@ -79,10 +79,9 @@ export default function Dashboard() {
 
   return (
     <div className="page">
-      {/* Header */}
       <div className="page-header">
         <div>
-          <h2 className="page-title">Good {getGreeting()}, {'\u{1F44B}'}</h2>
+          <h2 className="page-title">{getGreeting()}, {'\u{1F44B}'}</h2>
           <p className="page-subtitle">{format(new Date(), 'EEEE, d MMMM yyyy')} — Here's your business overview</p>
         </div>
       </div>
