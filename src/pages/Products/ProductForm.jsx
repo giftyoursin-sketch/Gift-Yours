@@ -63,7 +63,7 @@ export default function ProductForm({ product, onClose, onSave }) {
           }}
         >
           <div className="modal-body">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid-2" style={{ gap: '1rem' }}>
               {/* Product Name */}
               <div className="input-group" style={{ gridColumn: '1 / -1' }}>
                 <label className="input-label">Product Name *</label>

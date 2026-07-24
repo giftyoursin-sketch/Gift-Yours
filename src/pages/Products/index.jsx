@@ -71,11 +71,11 @@ export default function Products() {
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+        <div className="product-grid">
           {filtered.map(p => (
             <div key={p.id} className="card" style={{ padding: '1.25rem', position: 'relative' }}>
               {/* Status Badge */}
-              <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <div className="product-badge-row" style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <span className={`badge badge-${STATUS_COLORS[p.status] || 'muted'}`}>
                   {p.status || 'active'}
                 </span>
@@ -99,39 +99,39 @@ export default function Products() {
               </div>
 
               {/* Product Icon */}
-              <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <div className="product-icon-box" style={{ width: 48, height: 48, borderRadius: '12px', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
                 <Package size={22} color="var(--primary)" />
               </div>
 
-              <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: '0.25rem', paddingRight: '4rem' }}>{p.name}</h3>
-              {p.sku && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>SKU: {p.sku}</div>}
-              {p.category && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.875rem' }}>{p.category}</div>}
+              <h3 className="product-title" style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: '0.25rem', paddingRight: '4rem' }}>{p.name}</h3>
+              {p.sku && <div className="product-sku" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>SKU: {p.sku}</div>}
+              {p.category && <div className="product-category" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.875rem' }}>{p.category}</div>}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.875rem' }}>
-                <div style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.625rem' }}>
-                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Selling</div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)' }}>₹{p.sellingPrice || 0}</div>
+              <div className="grid-2 product-price-row" style={{ gap: '0.75rem', marginBottom: '0.875rem' }}>
+                <div className="price-box" style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.625rem' }}>
+                  <div className="price-label" style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Selling</div>
+                  <div className="price-value" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)' }}>₹{p.sellingPrice || 0}</div>
                 </div>
-                <div style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.625rem' }}>
-                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Cost</div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-secondary)' }}>₹{p.purchasePrice || 0}</div>
+                <div className="price-box" style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.625rem' }}>
+                  <div className="price-label" style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Cost</div>
+                  <div className="price-value" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-secondary)' }}>₹{p.purchasePrice || 0}</div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="product-stock-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                  <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: p.stock <= 0 ? 'var(--error)' : p.stock <= (p.minStock || 5) ? 'var(--warning)' : 'var(--success)' }}>
+                  <span className="stock-value" style={{ fontSize: '0.8125rem', fontWeight: 600, color: p.stock <= 0 ? 'var(--error)' : p.stock <= (p.minStock || 5) ? 'var(--warning)' : 'var(--success)' }}>
                     {p.stock || 0} in stock
                   </span>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <div className="profit-value" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   Profit: ₹{(p.sellingPrice || 0) - (p.purchasePrice || 0)}
                 </div>
               </div>
 
               {/* Low stock warning */}
               {p.stock > 0 && p.stock <= (p.minStock || 5) && (
-                <div style={{ marginTop: '0.75rem', padding: '0.375rem 0.625rem', background: 'var(--warning-light)', borderRadius: '6px', fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 600 }}>
+                <div className="low-stock-warning" style={{ marginTop: '0.75rem', padding: '0.375rem 0.625rem', background: 'var(--warning-light)', borderRadius: '6px', fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 600 }}>
                   ⚠️ Low stock alert
                 </div>
               )}

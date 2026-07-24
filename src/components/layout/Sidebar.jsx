@@ -1,31 +1,56 @@
-import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Package, Layers, ShoppingCart, FileText,
-  Users, TrendingDown, BarChart3, Settings, Gift, ChevronLeft, ChevronRight
+  LayoutDashboard, Package, Layers, FileText,
+  Users, TrendingDown, TrendingUp, BarChart3, Settings, ChevronLeft, ChevronRight
 } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
-const NAV_ITEMS = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/products', icon: Package, label: 'Products' },
-  { to: '/inventory', icon: Layers, label: 'Inventory' },
-  { to: '/invoices', icon: FileText, label: 'Invoices' },
-  { to: '/expenses', icon: TrendingDown, label: 'Expenses' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+const NAV_GROUPS = [
+  {
+    label: 'Overview',
+    items: [
+      { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+      { to: '/reports', icon: BarChart3, label: 'Reports' },
+    ]
+  },
+  {
+    label: 'Management',
+    items: [
+      { to: '/invoices', icon: FileText, label: 'Invoices' },
+      { to: '/expenses', icon: TrendingDown, label: 'Expenses' },
+    ]
+  },
+  {
+    label: 'Catalog',
+    items: [
+      { to: '/products', icon: Package, label: 'Products' },
+      { to: '/inventory', icon: Layers, label: 'Inventory' },
+    ]
+  },
+  {
+    label: 'Preferences',
+    items: [
+      { to: '/settings', icon: Settings, label: 'Settings' },
+    ]
+  }
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {
+  const { settings } = useApp();
+  const isDark = settings?.theme === 'dark';
+
   return (
     <aside
       className="sidebar"
       style={{
-        width: collapsed ? 'var(--sidebar-collapsed)' : 'var(--sidebar-width)',
+        width: collapsed ? 'var(--sidebar-collapsed)' : '240px',
         minHeight: '100vh',
-        background: 'var(--primary)',
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--surface-border)',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
+        transition: 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         overflow: 'hidden',
         flexShrink: 0,
         position: 'relative',
@@ -37,80 +62,77 @@ export default function Sidebar({ collapsed, onToggle }) {
         display: 'flex', alignItems: 'center', gap: '0.75rem',
         padding: collapsed ? '1.25rem 0' : '1.25rem 1.25rem',
         justifyContent: collapsed ? 'center' : 'flex-start',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: '1px solid var(--surface-border)',
         minHeight: 'var(--topbar-height)',
       }}>
         <div style={{
-          width: 38, height: 38, borderRadius: '10px',
-          background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+          width: collapsed ? 38 : 120, height: collapsed ? 38 : 44, borderRadius: '10px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0, boxShadow: '0 4px 12px rgba(239,68,68,0.4)',
+          flexShrink: 0, overflow: 'hidden'
         }}>
-          <Gift size={20} color="#fff" />
+          <img src={isDark ? "/logo-white.png" : "/logo.png"} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </div>
-        {!collapsed && (
-          <div>
-            <div style={{ color: '#fff', fontWeight: 800, fontSize: '1rem', lineHeight: 1.2 }}>Gift Yours</div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.6875rem', fontWeight: 500 }}>Business Manager</div>
-          </div>
-        )}
       </div>
 
       {/* Nav Items */}
-      <nav style={{ flex: 1, padding: '0.75rem 0.625rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', overflowY: 'auto', overflowX: 'hidden' }}>
-        {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center',
-              gap: '0.75rem',
-              padding: collapsed ? '0.75rem' : '0.625rem 0.875rem',
-              borderRadius: '10px',
-              color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
-              background: isActive ? 'rgba(255,255,255,0.12)' : 'transparent',
-              fontWeight: isActive ? 600 : 500,
-              fontSize: '0.875rem',
-              transition: 'all 0.15s ease',
-              textDecoration: 'none',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              whiteSpace: 'nowrap',
-              position: 'relative',
-            })}
-            title={collapsed ? label : ''}
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <span style={{
-                    position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-                    width: 3, height: 20, background: '#EF4444',
-                    borderRadius: '0 2px 2px 0',
-                  }} />
-                )}
-                <Icon size={18} style={{ flexShrink: 0 }} />
-                {!collapsed && <span>{label}</span>}
-              </>
+      <nav style={{ flex: 1, padding: '1rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', overflowY: 'auto', overflowX: 'hidden' }}>
+        {NAV_GROUPS.map((group, idx) => (
+          <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            {!collapsed && (
+              <div style={{ padding: '0 0.75rem', marginBottom: '0.25rem', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {group.label}
+              </div>
             )}
-          </NavLink>
+            {group.items.map(({ to, icon: Icon, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                style={({ isActive }) => ({
+                  display: 'flex', alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: collapsed ? '0.75rem' : '0.5rem 0.75rem',
+                  borderRadius: 'var(--radius)',
+                  color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
+                  background: isActive ? 'var(--primary-alpha-10)' : 'transparent',
+                  fontWeight: isActive ? 600 : 500,
+                  fontSize: '0.875rem',
+                  transition: 'all 0.15s ease',
+                  textDecoration: 'none',
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  whiteSpace: 'nowrap',
+                  position: 'relative',
+                })}
+                className={(navData) => navData.isActive ? '' : 'hover-bg-surface-2'}
+                title={collapsed ? label : ''}
+              >
+                {({ isActive }) => (
+                  <>
+                    <Icon size={18} style={{ flexShrink: 0, color: isActive ? 'var(--primary)' : 'var(--text-muted)' }} />
+                    {!collapsed && <span>{label}</span>}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 
       {/* Collapse Toggle */}
-      <div style={{ padding: '0.75rem 0.625rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+      <div style={{ padding: '0.75rem', borderTop: '1px solid var(--surface-border)' }}>
         <button
           onClick={onToggle}
-          className="desktop-only"
+          className="desktop-only hover-bg-surface-2"
           style={{
-            width: '100%', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-end',
-            padding: '0.5rem', borderRadius: '8px', color: 'rgba(255,255,255,0.5)',
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: '0.5rem 0.75rem', borderRadius: 'var(--radius)', color: 'var(--text-secondary)',
             background: 'transparent', border: 'none', cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            transition: 'all 0.15s ease', gap: '0.75rem', fontWeight: 500, fontSize: '0.875rem'
           }}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          {!collapsed && <span>Collapse</span>}
         </button>
       </div>
     </aside>

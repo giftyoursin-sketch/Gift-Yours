@@ -8,3 +8,10 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+// Prevent mouse wheel from changing values in number inputs
+document.addEventListener('wheel', (e) => {
+  if (document.activeElement.type === 'number') {
+    document.activeElement.blur();
+  }
+}, { passive: false });

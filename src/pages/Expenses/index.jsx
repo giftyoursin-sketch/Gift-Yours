@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Plus, X, Trash2, TrendingDown } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useApp } from '../../context/AppContext';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, parse } from 'date-fns';
+import MonthSelector from '../../components/MonthSelector';
 
 const CATEGORIES = ['Rent', 'Electricity', 'Staff Salary', 'Raw Materials', 'Packaging', 'Transportation', 'Marketing', 'Miscellaneous'];
 const PAYMENT_METHODS = ['Cash', 'UPI', 'Card', 'Bank Transfer'];
@@ -40,7 +41,7 @@ function ExpenseForm({ onClose, onSave, expense }) {
               <label className="input-label">Expense Title *</label>
               <input className="input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Monthly Rent" required />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="grid-2" style={{ gap: '0.75rem' }}>
               <div className="input-group">
                 <label className="input-label">Amount (₹) *</label>
                 <input className="input" type="number" min="0" step="0.01" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0.00" required />
@@ -78,19 +79,17 @@ function ExpenseForm({ onClose, onSave, expense }) {
 }
 
 export default function Expenses() {
-  const { expenses, addExpense, updateExpense, deleteExpense } = useApp();
+  const { expenses, addExpense, updateExpense, deleteExpense, globalMonth } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [editExpense, setEditExpense] = useState(null);
-  const [monthOffset, setMonthOffset] = useState(0);
 
-  const targetDate = subMonths(new Date(), monthOffset);
-  const monthStr = format(targetDate, 'yyyy-MM');
-  const monthLabel = format(targetDate, 'MMMM yyyy');
+  const monthObj = parse(globalMonth, 'yyyy-MM', new Date());
+  const monthLabel = format(monthObj, 'MMMM yyyy');
 
   const monthExpenses = useMemo(() =>
-    expenses.filter(e => e.date?.startsWith(monthStr))
+    expenses.filter(e => e.date?.startsWith(globalMonth))
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-  , [expenses, monthStr]);
+  , [expenses, globalMonth]);
 
   const totalMonth = monthExpenses.reduce((a, e) => a + (e.amount || 0), 0);
 
@@ -120,9 +119,12 @@ export default function Expenses() {
           <h2 className="page-title">Expenses</h2>
           <p className="page-subtitle">Track and manage business expenses</p>
         </div>
-        <button className="btn btn-primary" onClick={() => { setEditExpense(null); setShowForm(true); }}>
-          <Plus size={16} /> Add Expense
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <MonthSelector />
+          <button className="btn btn-primary" onClick={() => { setEditExpense(null); setShowForm(true); }}>
+            <Plus size={16} /> Add Expense
+          </button>
+        </div>
       </div>
 
       {/* Charts Row */}
@@ -150,8 +152,6 @@ export default function Expenses() {
               <div className="chart-subtitle">{monthLabel}</div>
             </div>
             <div style={{ display: 'flex', gap: '0.25rem' }}>
-              <button className="btn btn-ghost btn-sm" onClick={() => setMonthOffset(o => o + 1)}>‹</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => setMonthOffset(o => Math.max(0, o - 1))}>›</button>
             </div>
           </div>
           {categoryData.length === 0 ? (
@@ -183,9 +183,7 @@ export default function Expenses() {
       {/* Month header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <button className="btn btn-ghost btn-sm" onClick={() => setMonthOffset(o => o + 1)}>‹</button>
           <span style={{ fontWeight: 700, fontSize: '0.9375rem' }}>{monthLabel}</span>
-          <button className="btn btn-ghost btn-sm" onClick={() => setMonthOffset(o => Math.max(0, o - 1))} disabled={monthOffset === 0}>›</button>
         </div>
         <div style={{ fontWeight: 800, fontSize: '1.125rem', color: 'var(--error)' }}>₹{totalMonth.toLocaleString('en-IN')}</div>
       </div>

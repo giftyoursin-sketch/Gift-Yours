@@ -33,7 +33,7 @@ function CustomerForm({ customer, onClose, onSave }) {
               <label className="input-label">Full Name *</label>
               <input className="input" value={form.name} onChange={e => set('name', e.target.value)} placeholder="Customer name" required />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="grid-2" style={{ gap: '0.75rem' }}>
               <div className="input-group">
                 <label className="input-label">Phone</label>
                 <input className="input" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="Phone number" />
@@ -119,7 +119,7 @@ export default function Customers() {
           <button className="btn btn-primary" onClick={() => setShowForm(true)}><Plus size={16} /> Add Customer</button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+        <div className="grid-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
           {filtered.map(c => {
             const stats = getCustomerStats(c.id);
             const isRepeat = stats.orders > 1;
@@ -142,7 +142,7 @@ export default function Customers() {
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                <div className="grid-3" style={{ gap: '0.5rem' }}>
                   <div style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.5rem', textAlign: 'center' }}>
                     <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)' }}>{stats.orders}</div>
                     <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600 }}>ORDERS</div>
@@ -194,7 +194,7 @@ export default function Customers() {
               </div>
             </div>
             <div className="drawer-body">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <div className="grid-2" style={{ gap: '0.75rem', marginBottom: '1.5rem' }}>
                 {[
                   { label: 'Total Orders', value: viewStats.orders },
                   { label: 'Lifetime Value', value: `₹${viewStats.lifetimeValue.toLocaleString('en-IN')}`, color: 'var(--success)' },

@@ -5,63 +5,75 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 import { useApp } from '../../context/AppContext';
-import { format, subMonths, eachMonthOfInterval, startOfMonth, endOfMonth } from 'date-fns';
+import { format, eachDayOfInterval, parse } from 'date-fns';
+import MonthSelector from '../../components/MonthSelector';
 
 const fmt = v => `₹${Number(v || 0).toLocaleString('en-IN')}`;
 
 export default function Reports() {
-  const { sales, expenses, products, customers } = useApp();
+  const { sales, expenses, products, customers, globalMonth } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
-  const [year, setYear] = useState(new Date().getFullYear());
 
-  // Monthly data for the year
-  const monthlyData = useMemo(() => {
-    return Array.from({ length: 12 }, (_, i) => {
-      const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`;
-      const monthSales = sales.filter(s => s.date?.startsWith(monthStr));
-      const monthExp = expenses.filter(e => e.date?.startsWith(monthStr));
-      const income = monthSales.reduce((a, s) => a + (s.total || 0), 0);
-      const expense = monthExp.reduce((a, e) => a + (e.amount || 0), 0);
+  const monthObj = parse(globalMonth, 'yyyy-MM', new Date());
+  const monthLabel = format(monthObj, 'MMMM yyyy');
+
+  // Daily data for the selected month
+  const dailyData = useMemo(() => {
+    const year = parseInt(globalMonth.split('-')[0]);
+    const month = parseInt(globalMonth.split('-')[1]);
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+    const days = eachDayOfInterval({ start, end });
+    
+    return days.map(d => {
+      const dateStr = format(d, 'yyyy-MM-dd');
+      const daySales = sales.filter(s => s.date === dateStr);
+      const dayExp = expenses.filter(e => e.date === dateStr);
+      const income = daySales.reduce((a, s) => a + (s.total || 0), 0);
+      const expense = dayExp.reduce((a, e) => a + (e.amount || 0), 0);
       return {
-        month: format(new Date(year, i, 1), 'MMM'),
+        day: format(d, 'dd MMM'),
         income, expense, profit: income - expense,
-        orders: monthSales.length,
+        orders: daySales.length,
       };
     });
-  }, [sales, expenses, year]);
+  }, [sales, expenses, globalMonth]);
 
-  const totalIncome = monthlyData.reduce((a, m) => a + m.income, 0);
-  const totalExpense = monthlyData.reduce((a, m) => a + m.expense, 0);
+  const totalIncome = dailyData.reduce((a, m) => a + m.income, 0);
+  const totalExpense = dailyData.reduce((a, m) => a + m.expense, 0);
   const totalProfit = totalIncome - totalExpense;
-  const totalOrders = monthlyData.reduce((a, m) => a + m.orders, 0);
+  const totalOrders = dailyData.reduce((a, m) => a + m.orders, 0);
 
-  // Top products
+  const monthSalesList = useMemo(() => sales.filter(s => s.date?.startsWith(globalMonth)), [sales, globalMonth]);
+  const monthExpenseList = useMemo(() => expenses.filter(e => e.date?.startsWith(globalMonth)), [expenses, globalMonth]);
+
+  // Top products for the month
   const topProducts = useMemo(() => {
     const map = {};
-    sales.forEach(s => (s.items || []).forEach(item => {
+    monthSalesList.forEach(s => (s.items || []).forEach(item => {
       if (!map[item.productId]) map[item.productId] = { name: item.productName, qty: 0, revenue: 0 };
       map[item.productId].qty += item.qty || 0;
       map[item.productId].revenue += (item.qty || 0) * (item.price || 0);
     }));
     return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
-  }, [sales]);
+  }, [monthSalesList]);
 
-  // Category expense
+  // Category expense for the month
   const categoryExpenses = useMemo(() => {
     const map = {};
-    expenses.forEach(e => { map[e.category] = (map[e.category] || 0) + (e.amount || 0); });
+    monthExpenseList.forEach(e => { map[e.category] = (map[e.category] || 0) + (e.amount || 0); });
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
-  }, [expenses]);
+  }, [monthExpenseList]);
 
   const COLORS = ['#1E1B4B', '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'];
 
   const exportCSV = () => {
-    const rows = [['Month', 'Revenue', 'Expenses', 'Profit', 'Orders']];
-    monthlyData.forEach(m => rows.push([m.month, m.income, m.expense, m.profit, m.orders]));
+    const rows = [['Date', 'Revenue', 'Expenses', 'Profit', 'Orders']];
+    dailyData.forEach(m => rows.push([m.day, m.income, m.expense, m.profit, m.orders]));
     const csv = rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `report-${year}.csv`; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = `report-${globalMonth}.csv`; a.click();
   };
 
   return (
@@ -69,12 +81,10 @@ export default function Reports() {
       <div className="page-header">
         <div>
           <h2 className="page-title">Reports & Analytics</h2>
-          <p className="page-subtitle">Business performance overview</p>
+          <p className="page-subtitle">{monthLabel} — Business performance</p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <select className="input" style={{ width: 'auto' }} value={year} onChange={e => setYear(parseInt(e.target.value))}>
-            {[2023, 2024, 2025, 2026].map(y => <option key={y}>{y}</option>)}
-          </select>
+          <MonthSelector />
           <button className="btn btn-secondary" onClick={exportCSV}><Download size={15} /> CSV</button>
           <button className="btn btn-secondary" onClick={() => window.print()}><Printer size={15} /> Print</button>
         </div>
@@ -108,12 +118,12 @@ export default function Reports() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Revenue vs Expense */}
           <div className="chart-card">
-            <div className="chart-title">Revenue vs Expenses — {year}</div>
-            <div className="chart-subtitle">Monthly comparison</div>
+            <div className="chart-title">Revenue vs Expenses</div>
+            <div className="chart-subtitle">Daily comparison ({monthLabel})</div>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
+              <BarChart data={dailyData} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="day" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
                 <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--surface-border)', borderRadius: 10, fontSize: 13 }} formatter={(v, n) => [fmt(v), n === 'income' ? 'Revenue' : n === 'expense' ? 'Expenses' : 'Profit']} />
                 <Bar dataKey="income" fill="#1E1B4B" radius={[4, 4, 0, 0]} name="income" />
@@ -126,9 +136,9 @@ export default function Reports() {
           {/* Profit Trend */}
           <div className="chart-card">
             <div className="chart-title">Profit Trend</div>
-            <div className="chart-subtitle">Net profit by month</div>
+            <div className="chart-subtitle">Net profit by day ({monthLabel})</div>
             <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={monthlyData} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
+              <AreaChart data={dailyData} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10B981" stopOpacity={0.15} />
@@ -136,7 +146,7 @@ export default function Reports() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="day" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
                 <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--surface-border)', borderRadius: 10, fontSize: 13 }} formatter={v => [fmt(v), 'Profit']} />
                 <Area type="monotone" dataKey="profit" stroke="#10B981" strokeWidth={2.5} fill="url(#profitGrad)" />
@@ -149,7 +159,7 @@ export default function Reports() {
       {activeTab === 'products' && (
         <div className="chart-card">
           <div className="chart-title">Top Selling Products</div>
-          <div className="chart-subtitle">By total revenue, all time</div>
+          <div className="chart-subtitle">By total revenue ({monthLabel})</div>
           {topProducts.length === 0 ? (
             <div className="empty-state"><p>No sales data available</p></div>
           ) : (
@@ -183,7 +193,7 @@ export default function Reports() {
         <div className="content-grid grid-2">
           <div className="chart-card">
             <div className="chart-title">Expenses by Category</div>
-            <div className="chart-subtitle">All time</div>
+            <div className="chart-subtitle">For {monthLabel}</div>
             {categoryExpenses.length === 0 ? (
               <div className="empty-state"><p>No expense data</p></div>
             ) : (
@@ -210,14 +220,16 @@ export default function Reports() {
           </div>
 
           <div className="chart-card">
-            <div className="chart-title">Monthly Expense Summary</div>
-            <div className="chart-subtitle">{year}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {monthlyData.map(m => (
-                <div key={m.month} style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-                  <span style={{ width: 36, fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{m.month}</span>
+            <div className="chart-title">Daily Expense Summary</div>
+            <div className="chart-subtitle">{monthLabel}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+              {dailyData.filter(d => d.expense > 0).length === 0 ? (
+                <div className="empty-state" style={{ padding: '2rem 0' }}><p>No expenses recorded</p></div>
+              ) : dailyData.filter(d => d.expense > 0).map(m => (
+                <div key={m.day} style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                  <span style={{ width: 45, fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{m.day}</span>
                   <div style={{ flex: 1, height: 6, background: 'var(--surface-2)', borderRadius: 99, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${totalExpense > 0 ? (m.expense / Math.max(...monthlyData.map(d => d.expense))) * 100 : 0}%`, background: 'var(--error)', borderRadius: 99 }} />
+                    <div style={{ height: '100%', width: `${totalExpense > 0 ? (m.expense / Math.max(...dailyData.map(d => d.expense))) * 100 : 0}%`, background: 'var(--error)', borderRadius: 99 }} />
                   </div>
                   <span style={{ fontSize: '0.8125rem', fontWeight: 700, width: 80, textAlign: 'right' }}>{fmt(m.expense)}</span>
                 </div>

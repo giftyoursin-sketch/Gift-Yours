@@ -2,43 +2,49 @@ import React, { useState, useMemo } from 'react';
 import { Plus, Search, Eye, Trash2, Download, Share2, Copy, FileText, X, Printer } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
+import MonthSelector from '../../components/MonthSelector';
 
 const STATUS_COLORS = { paid: 'success', pending: 'warning', partial: 'accent' };
 
 export default function Invoices() {
-  const { invoices, customers, deleteInvoice } = useApp();
+  const { invoices, customers, deleteInvoice, globalMonth } = useApp();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const navigate = useNavigate();
 
   const filtered = useMemo(() =>
     invoices
+      .filter(inv => inv.date?.startsWith(globalMonth))
       .filter(inv => {
         const matchSearch = !search || inv.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) || inv.customerName?.toLowerCase().includes(search.toLowerCase());
         const matchStatus = statusFilter === 'all' || inv.status === statusFilter;
         return matchSearch && matchStatus;
       })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  , [invoices, search, statusFilter]);
+  , [invoices, search, statusFilter, globalMonth]);
 
-  const totalPaid = invoices.filter(i => i.status === 'paid').reduce((a, i) => a + (i.grandTotal || 0), 0);
-  const totalPending = invoices.filter(i => i.status === 'pending').reduce((a, i) => a + (i.grandTotal || 0), 0);
+  const totalPaid = filtered.filter(i => i.status === 'paid').reduce((a, i) => a + (i.grandTotal || 0), 0);
+  const totalPending = filtered.filter(i => i.status === 'pending').reduce((a, i) => a + (i.grandTotal || 0), 0);
+  const monthObj = parse(globalMonth, 'yyyy-MM', new Date());
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
           <h2 className="page-title">Invoices</h2>
-          <p className="page-subtitle">{invoices.length} invoices · ₹{totalPaid.toLocaleString('en-IN')} collected</p>
+          <p className="page-subtitle">{format(monthObj, 'MMMM yyyy')} · {filtered.length} invoices · ₹{totalPaid.toLocaleString('en-IN')} collected</p>
         </div>
-        <Link to="/invoices/new" className="btn btn-primary"><Plus size={16} /> Create Invoice</Link>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <MonthSelector />
+          <Link to="/invoices/new" className="btn btn-primary"><Plus size={16} /> Create</Link>
+        </div>
       </div>
 
       {/* Summary */}
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginBottom: '1.25rem' }}>
         {[
-          { label: 'Total Invoices', value: invoices.length, color: 'var(--primary)', bg: 'var(--primary-alpha-10)' },
+          { label: 'Total Invoices', value: filtered.length, color: 'var(--primary)', bg: 'var(--primary-alpha-10)' },
           { label: 'Paid', value: `₹${totalPaid.toLocaleString('en-IN')}`, color: 'var(--success)', bg: 'var(--success-light)' },
           { label: 'Pending', value: `₹${totalPending.toLocaleString('en-IN')}`, color: 'var(--warning)', bg: 'var(--warning-light)' },
         ].map(s => (

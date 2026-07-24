@@ -66,7 +66,7 @@ function SaleForm({ onClose, onSave, products, customers }) {
         <form onSubmit={handleSubmit}>
           <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Customer + Date */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid-2" style={{ gap: '1rem' }}>
               <div className="input-group">
                 <label className="input-label">Customer</label>
                 <select className="input" value={form.customerId} onChange={e => set('customerId', e.target.value)}>
@@ -148,7 +148,7 @@ function SaleForm({ onClose, onSave, products, customers }) {
             </div>
 
             {/* Payment */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid-2" style={{ gap: '1rem' }}>
               <div className="input-group">
                 <label className="input-label">Payment Method</label>
                 <select className="input" value={form.paymentMethod} onChange={e => set('paymentMethod', e.target.value)}>
@@ -285,7 +285,7 @@ export default function Sales() {
             </div>
             <div className="drawer-body">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="grid-2" style={{ gap: '1rem' }}>
                   <div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>CUSTOMER</div><div style={{ fontWeight: 600 }}>{customers.find(c => c.id === viewSale.customerId)?.name || viewSale.customerName || 'Walk-in'}</div></div>
                   <div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>PAYMENT</div><div style={{ fontWeight: 600 }}>{viewSale.paymentMethod}</div></div>
                 </div>

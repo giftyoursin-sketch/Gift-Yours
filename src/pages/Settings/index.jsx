@@ -61,7 +61,7 @@ export default function Settings() {
           <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem' }}>🏪 Business Information</h3>
           <form onSubmit={handleSave}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
+              <div className="grid-2" style={{ gap: '0.875rem' }}>
                 <div className="input-group">
                   <label className="input-label">Business Name</label>
                   <input className="input" value={form.businessName} onChange={e => set('businessName', e.target.value)} placeholder="Gift Yours" />
@@ -107,8 +107,6 @@ export default function Settings() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
             {[
               { label: 'Products', count: products.length, color: 'var(--primary)' },
-              { label: 'Customers', count: customers.length, color: 'var(--info)' },
-              { label: 'Sales', count: sales.length, color: 'var(--success)' },
               { label: 'Invoices', count: invoices.length, color: 'var(--accent)' },
               { label: 'Expenses', count: expenses.length, color: 'var(--warning)' },
             ].map(s => (

@@ -1,4 +1,5 @@
 {
+  "name": "gift-yours-web-app",
   "rewrites": [
     {
       "source": "/(.*)",

@@ -28,12 +28,8 @@ export default function InvoiceTemplate({ invoice }) {
         {/* Brand */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #EF4444, #DC2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 18 }}>
-              🎁
-            </div>
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: '#1E1B4B', letterSpacing: '-0.02em' }}>{businessName || 'Gift Yours'}</div>
-              <div style={{ fontSize: 11, color: '#6B7280', fontWeight: 500 }}>Premium Gift Shop</div>
+            <div style={{ width: 160, height: 60, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden' }}>
+              <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
           </div>
           {businessAddress && <div style={{ fontSize: 10.5, color: '#6B7280', marginTop: 4 }}>{businessAddress}</div>}
