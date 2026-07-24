@@ -407,18 +407,39 @@ export function AppProvider({ children }) {
   // ─── COMPUTED METRICS ────────────────────────────────────────
   const getMetrics = useCallback(() => {
     const todayStr = today();
+    
+    // Today metrics
     const todaySales = state.sales.filter(s => s.date === todayStr);
     const todayExpenses = state.expenses.filter(e => e.date === todayStr);
     const todayIncome = todaySales.reduce((a, s) => a + (s.total || 0), 0);
     const todayExpenseTotal = todayExpenses.reduce((a, e) => a + (e.amount || 0), 0);
-    const todayProfit = todayIncome - todayExpenseTotal;
+    
+    let todayProductCost = 0;
+    todaySales.forEach(sale => {
+      (sale.items || []).forEach(item => {
+        const product = state.products.find(p => p.id === item.productId);
+        const pCost = product ? (product.purchasePrice || 0) : 0;
+        todayProductCost += (item.qty || 0) * pCost;
+      });
+    });
+    const todayProfit = todayIncome - todayProductCost - todayExpenseTotal;
 
+    // Month metrics
     const monthStr = todayStr.slice(0, 7);
     const monthSales = state.sales.filter(s => s.date?.startsWith(monthStr));
     const monthExpenses = state.expenses.filter(e => e.date?.startsWith(monthStr));
     const monthIncome = monthSales.reduce((a, s) => a + (s.total || 0), 0);
     const monthExpenseTotal = monthExpenses.reduce((a, e) => a + (e.amount || 0), 0);
-    const monthProfit = monthIncome - monthExpenseTotal;
+    
+    let monthProductCost = 0;
+    monthSales.forEach(sale => {
+      (sale.items || []).forEach(item => {
+        const product = state.products.find(p => p.id === item.productId);
+        const pCost = product ? (product.purchasePrice || 0) : 0;
+        monthProductCost += (item.qty || 0) * pCost;
+      });
+    });
+    const monthProfit = monthIncome - monthProductCost - monthExpenseTotal;
 
     const totalInventoryValue = state.products.reduce((a, p) => a + (p.stock || 0) * (p.purchasePrice || 0), 0);
     const lowStockProducts = state.products.filter(p => p.stock > 0 && p.stock <= (p.minStock || 5));
