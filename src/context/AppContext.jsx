@@ -120,7 +120,7 @@ function reducer(state, action) {
     case 'SET_SETTINGS': return { ...state, settings: { ...state.settings, ...action.payload } };
     case 'ADD_NOTIFICATION': return { ...state, notifications: [action.payload, ...state.notifications].slice(0, 20) };
     case 'REMOVE_NOTIFICATION': return { ...state, notifications: state.notifications.filter(n => n.id !== action.payload) };
-    case 'SET_DB_ERROR': return { ...state, dbError: true, loading: false };
+    case 'SET_DB_ERROR': return { ...state, dbError: true, dbErrorMessage: action.payload, loading: false };
     default: return state;
   }
 }
@@ -152,8 +152,9 @@ export function AppProvider({ children }) {
         ]);
 
         if (e1 || e2 || e3 || e4 || e5 || e6) {
-          console.error('Supabase load errors:', { e1, e2, e3, e4, e5, e6, e7 });
-          dispatch({ type: 'SET_DB_ERROR' });
+          const errs = [e1, e2, e3, e4, e5, e6].filter(Boolean);
+          console.error('Supabase load errors:', errs);
+          dispatch({ type: 'SET_DB_ERROR', payload: errs[0]?.message || JSON.stringify(errs[0]) });
           return;
         }
 

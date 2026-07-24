@@ -21,7 +21,7 @@ const QUICK_ACTIONS = [
 ];
 
 export default function Dashboard() {
-  const { sales, expenses, products, invoices, getMetrics, dbError } = useApp();
+  const { sales, expenses, products, invoices, getMetrics, dbError, dbErrorMessage } = useApp();
   const metrics = getMetrics();
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState(null);
@@ -88,7 +88,9 @@ export default function Dashboard() {
       
       {dbError && (
         <div style={{ background: 'var(--error-light)', color: 'var(--error)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--error)', fontWeight: 600 }}>
-          ⚠️ Failed to connect to the database. If you are on Vercel, please verify that VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are correctly set in the Vercel Environment Variables (Production) and that there are no typos!
+          ⚠️ Failed to connect to the database. Error: {dbErrorMessage || 'Please verify that VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are correctly set.'}
+          <br /><br />
+          <small style={{ opacity: 0.8 }}>Debugging Info URL: {import.meta.env.VITE_SUPABASE_URL || 'UNDEFINED'}</small>
         </div>
       )}
 
