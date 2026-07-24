@@ -9,9 +9,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
-import MonthSelector from '../../components/MonthSelector';
 import { useApp } from '../../context/AppContext';
-import { format, subDays, startOfMonth, eachDayOfInterval, parse } from 'date-fns';
+import { format, subDays, startOfMonth, eachDayOfInterval } from 'date-fns';
 
 const fmt = (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`;
 
@@ -22,32 +21,33 @@ const QUICK_ACTIONS = [
 ];
 
 export default function Dashboard() {
-  const { sales, expenses, products, invoices, getMetrics, globalMonth } = useApp();
+  const { sales, expenses, products, invoices, getMetrics } = useApp();
   const metrics = getMetrics();
   const navigate = useNavigate();
+  const [activeModal, setActiveModal] = useState(null);
 
-  const monthSalesList = sales.filter(s => s.date?.startsWith(globalMonth));
-  const monthExpenseList = expenses.filter(e => e.date?.startsWith(globalMonth));
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const monthStr = format(new Date(), 'yyyy-MM');
+  const todaySalesList = sales.filter(s => s.date === todayStr);
+  const todayExpenseList = expenses.filter(e => e.date === todayStr);
+  const monthSalesList = sales.filter(s => s.date?.startsWith(monthStr));
+  const monthExpenseList = expenses.filter(e => e.date?.startsWith(monthStr));
 
-  // Build chart data for the selected month
+  // Build last 14 days chart data
   const chartData = useMemo(() => {
-    const year = parseInt(globalMonth.split('-')[0]);
-    const month = parseInt(globalMonth.split('-')[1]);
-    const start = new Date(year, month - 1, 1);
-    const end = new Date(year, month, 0);
-    const days = eachDayOfInterval({ start, end });
+    const days = Array.from({ length: 14 }, (_, i) => subDays(new Date(), 13 - i));
     return days.map(d => {
       const dateStr = format(d, 'yyyy-MM-dd');
       const dayIncome = sales.filter(s => s.date === dateStr).reduce((a, s) => a + (s.total || 0), 0);
       const dayExpense = expenses.filter(e => e.date === dateStr).reduce((a, e) => a + (e.amount || 0), 0);
       return { date: format(d, 'dd MMM'), income: dayIncome, expense: dayExpense, profit: dayIncome - dayExpense };
     });
-  }, [sales, expenses, globalMonth]);
+  }, [sales, expenses]);
 
-  // Top products by sales for the selected month
+  // Top products by sales
   const topProducts = useMemo(() => {
     const map = {};
-    monthSalesList.forEach(s => {
+    sales.forEach(s => {
       (s.items || []).forEach(item => {
         if (!map[item.productId]) map[item.productId] = { name: item.productName, qty: 0, revenue: 0 };
         map[item.productId].qty += item.qty || 0;
@@ -55,42 +55,64 @@ export default function Dashboard() {
       });
     });
     return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
-  }, [monthSalesList]);
+  }, [sales]);
 
-  // Recent activity for the selected month
+  // Recent activity
   const recentActivity = useMemo(() => {
     const all = [
-      ...monthSalesList.map(s => ({ ...s, _type: 'sale', _label: `Sale #${s.id?.slice(-4)}`, _amount: s.total, _color: 'var(--success)' })),
-      ...monthExpenseList.map(e => ({ ...e, _type: 'expense', _label: e.title || 'Expense', _amount: e.amount, _color: 'var(--error)' })),
+      ...sales.slice(-5).map(s => ({ ...s, _type: 'sale', _label: `Sale #${s.id?.slice(-4)}`, _amount: s.total, _color: 'var(--success)' })),
+      ...expenses.slice(-5).map(e => ({ ...e, _type: 'expense', _label: e.title || 'Expense', _amount: e.amount, _color: 'var(--error)' })),
     ];
     return all.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
-  }, [monthSalesList, monthExpenseList]);
+  }, [sales, expenses]);
 
   const STATS = [
-    { label: "Today's Sales", value: fmt(metrics.todayIncome), icon: IndianRupee, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: `${metrics.todaySalesCount} orders today` },
-    { label: "Today's Expenses", value: fmt(metrics.todayExpenseTotal), icon: TrendingDown, color: 'var(--error)', bg: 'var(--error-light)', sub: 'Amount spent today' },
-    { label: "Today's Profit", value: fmt(metrics.todayProfit), icon: TrendingUp, color: metrics.todayProfit >= 0 ? 'var(--success)' : 'var(--error)', bg: 'var(--success-light)', sub: 'Net profit today' },
-    { label: 'Monthly Revenue', value: fmt(metrics.monthIncome), icon: IndianRupee, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: `${metrics.monthSalesCount} orders this month` },
-    { label: 'Monthly Profit', value: fmt(metrics.monthProfit), icon: TrendingUp, color: metrics.monthProfit >= 0 ? 'var(--success)' : 'var(--error)', bg: 'var(--success-light)', sub: 'Net profit this month' },
+    { label: "Today's Sales", value: fmt(metrics.todayIncome), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: `${metrics.todaySalesCount} orders`, onClick: () => setActiveModal('today_sales') },
+    { label: "Today's Expenses", value: fmt(metrics.todayExpenseTotal), icon: TrendingDown, color: 'var(--error)', bg: 'var(--error-light)', sub: 'Spent today', onClick: () => setActiveModal('today_expenses') },
+    { label: "Today's Profit", value: fmt(metrics.todayProfit), icon: IndianRupee, color: metrics.todayProfit >= 0 ? 'var(--primary)' : 'var(--error)', bg: 'var(--primary-alpha-10)', sub: 'Net today', onClick: () => setActiveModal('today_profit') },
+    { label: 'Monthly Revenue', value: fmt(metrics.monthIncome), icon: Receipt, color: 'var(--accent)', bg: 'var(--accent-light)', sub: `${metrics.monthSalesCount} orders`, onClick: () => setActiveModal('month_sales') },
+    { label: 'Monthly Profit', value: fmt(metrics.monthProfit), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: 'This month', onClick: () => setActiveModal('month_profit') },
     { label: 'Inventory Value', value: fmt(metrics.totalInventoryValue), icon: Layers, color: 'var(--info)', bg: 'var(--info-light)', sub: `${products.length} products`, to: '/inventory' },
     { label: 'Low Stock', value: metrics.lowStockProducts.length, icon: AlertTriangle, color: 'var(--warning)', bg: 'var(--warning-light)', sub: 'Need restock', to: '/inventory' },
-    { label: 'Total Invoices', value: metrics.monthInvoicesCount, icon: FileText, color: 'var(--accent)', bg: 'var(--accent-light)', sub: 'Invoices created', to: '/invoices' },
+    { label: 'Total Invoices', value: invoices.length, icon: FileText, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: 'Invoices created', to: '/invoices' },
   ];
-
-  const monthObj = parse(globalMonth, 'yyyy-MM', new Date());
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
           <h2 className="page-title">{getGreeting()}, {'\u{1F44B}'}</h2>
-          <p className="page-subtitle">{format(monthObj, 'MMMM yyyy')} — Business overview</p>
+          <p className="page-subtitle">{format(new Date(), 'EEEE, d MMMM yyyy')} — Here's your business overview</p>
         </div>
-        <MonthSelector />
+      </div>
+
+      {/* Quick Actions */}
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        {QUICK_ACTIONS.map(({ label, icon: Icon, to, color, bg }) => (
+          <Link
+            key={to}
+            to={to}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.625rem',
+              padding: '0.625rem 1.125rem',
+              background: 'var(--surface)', border: '1.5px solid var(--surface-border)',
+              borderRadius: 'var(--radius)', cursor: 'pointer',
+              fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)',
+              textDecoration: 'none', transition: 'var(--transition)',
+              boxShadow: 'var(--shadow-xs)',
+            }}
+            className="card-hover"
+          >
+            <div style={{ width: 28, height: 28, borderRadius: '7px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon size={14} color={color} />
+            </div>
+            {label}
+          </Link>
+        ))}
       </div>
 
       {/* Stats Grid */}
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
         {STATS.map(({ label, value, icon: Icon, color, bg, sub, to, onClick }) => {
           const content = (
             <>
@@ -106,6 +128,10 @@ export default function Dashboard() {
             <Link key={label} to={to} className="stat-card card-hover" style={{ textDecoration: 'none', display: 'block' }}>
               {content}
             </Link>
+          ) : onClick ? (
+            <div key={label} className="stat-card card-hover" onClick={onClick} style={{ cursor: 'pointer' }}>
+              {content}
+            </div>
           ) : (
             <div key={label} className="stat-card">
               {content}
@@ -119,28 +145,28 @@ export default function Dashboard() {
         {/* Revenue Chart */}
         <div className="chart-card">
           <div className="chart-title">Revenue vs Expenses</div>
-          <div className="chart-subtitle">Daily breakdown</div>
-          <ResponsiveContainer width="100%" height={320}>
+          <div className="chart-subtitle">Last 14 days</div>
+          <ResponsiveContainer width="100%" height={240}>
             <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#1E1B4B" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#1E1B4B" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#EF4444" stopOpacity={0.12} />
                   <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
               <Tooltip
-                contentStyle={{ background: 'var(--surface)', border: '1px solid var(--surface-border)', borderRadius: 12, fontSize: 13, boxShadow: 'var(--shadow-lg)' }}
+                contentStyle={{ background: 'var(--surface)', border: '1px solid var(--surface-border)', borderRadius: 10, fontSize: 13 }}
                 formatter={(v, name) => [fmt(v), name === 'income' ? 'Revenue' : name === 'expense' ? 'Expenses' : 'Profit']}
               />
-              <Area type="monotone" dataKey="income" stroke="#10B981" strokeWidth={3} fill="url(#incomeGrad)" />
-              <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={3} fill="url(#expenseGrad)" />
+              <Area type="monotone" dataKey="income" stroke="#1E1B4B" strokeWidth={2.5} fill="url(#incomeGrad)" />
+              <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={2} fill="url(#expenseGrad)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -239,6 +265,93 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Modals for Breakdown */}
+      {activeModal && (
+        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+          <div className="modal" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>
+                {activeModal.startsWith('month') 
+                  ? (activeModal.endsWith('sales') ? "This Month's Sales" : activeModal.endsWith('profit') ? "This Month's Profit Breakdown" : "This Month's Expenses")
+                  : (activeModal.endsWith('sales') ? "Today's Sales" : activeModal.endsWith('profit') ? "Today's Profit Breakdown" : "Today's Expenses")
+                }
+              </h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setActiveModal(null)}><X size={18} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '70vh', overflowY: 'auto' }}>
+              
+              {(activeModal.endsWith('profit') || activeModal.endsWith('sales')) && (
+                <div>
+                  <h4 style={{ color: 'var(--success)', marginBottom: '0.75rem', fontSize: '0.9375rem', fontWeight: 600 }}>Income (From Invoices)</h4>
+                  {(activeModal.startsWith('month') ? monthSalesList : todaySalesList).length === 0 ? <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No sales found.</p> : (
+                    <div className="table-responsive">
+                      <table className="table">
+                        <thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th></tr></thead>
+                        <tbody>
+                          {(activeModal.startsWith('month') ? monthSalesList : todaySalesList).map(s => (
+                            <tr key={s.id}>
+                              <td>#{s.id?.slice(-4) || s.invoiceId?.slice(-4)}</td>
+                              <td>{s.customerName || 'Walk-in'}</td>
+                              <td style={{ fontSize: '0.8125rem' }}>{format(new Date(s.date), 'dd MMM')}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--success)' }}>{fmt(s.total)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {activeModal.endsWith('profit') && <h4 style={{ color: 'var(--error)', marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.9375rem', fontWeight: 600 }}>Expenses</h4>}
+                </div>
+              )}
+
+              {(activeModal.endsWith('expenses') || activeModal.endsWith('profit')) && (
+                <div>
+                  {(activeModal.startsWith('month') ? monthExpenseList : todayExpenseList).length === 0 ? <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No expenses found.</p> : (
+                    <div className="table-responsive">
+                      <table className="table">
+                        <thead><tr><th>Expense</th><th>Category</th><th>Date</th><th>Amount</th></tr></thead>
+                        <tbody>
+                          {(activeModal.startsWith('month') ? monthExpenseList : todayExpenseList).map(e => (
+                            <tr key={e.id}>
+                              <td>{e.title}</td>
+                              <td><span className="badge badge-secondary">{e.category}</span></td>
+                              <td style={{ fontSize: '0.8125rem' }}>{format(new Date(e.date), 'dd MMM')}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--error)' }}>{fmt(e.amount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div style={{ 
+                marginTop: '1rem', padding: '1rem', background: 'var(--surface-2)', 
+                borderRadius: '8px', display: 'flex', justifyContent: 'space-between', 
+                alignItems: 'center', border: '1px solid var(--surface-border)' 
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Total {activeModal.endsWith('expenses') ? 'Expenses' : activeModal.endsWith('sales') ? 'Sales' : 'Net Profit'}:
+                </span>
+                <span style={{ 
+                  fontSize: '1.25rem', fontWeight: 800,
+                  color: activeModal.endsWith('expenses') ? 'var(--error)' : activeModal.endsWith('sales') ? 'var(--success)' : (activeModal.startsWith('month') ? metrics.monthProfit : metrics.todayProfit) >= 0 ? 'var(--success)' : 'var(--error)' 
+                }}>
+                  {fmt(
+                    activeModal.endsWith('expenses') 
+                      ? (activeModal.startsWith('month') ? metrics.monthExpenseTotal : metrics.todayExpenseTotal)
+                      : activeModal.endsWith('sales') 
+                        ? (activeModal.startsWith('month') ? metrics.monthIncome : metrics.todayIncome)
+                        : (activeModal.startsWith('month') ? metrics.monthProfit : metrics.todayProfit)
+                  )}
+                </span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -103,7 +103,6 @@ const initialState = {
     businessName: 'Gift Yours', phone: '', address: '',
     invoicePrefix: 'INV', currency: '₹', theme: 'light', nextInvoiceNumber: 1,
   },
-  globalMonth: format(new Date(), 'yyyy-MM'),
   notifications: [],
   loading: true,
   dbError: false,
@@ -119,7 +118,6 @@ function reducer(state, action) {
     case 'SET_EXPENSES': return { ...state, expenses: action.payload };
     case 'SET_STOCK_HISTORY': return { ...state, stockHistory: action.payload };
     case 'SET_SETTINGS': return { ...state, settings: { ...state.settings, ...action.payload } };
-    case 'SET_GLOBAL_MONTH': return { ...state, globalMonth: action.payload };
     case 'ADD_NOTIFICATION': return { ...state, notifications: [action.payload, ...state.notifications].slice(0, 20) };
     case 'REMOVE_NOTIFICATION': return { ...state, notifications: state.notifications.filter(n => n.id !== action.payload) };
     case 'SET_DB_ERROR': return { ...state, dbError: true, loading: false };
@@ -406,56 +404,32 @@ export function AppProvider({ children }) {
     notify('Settings saved', 'success');
   }, [notify]);
 
-  const setGlobalMonth = useCallback((monthStr) => {
-    dispatch({ type: 'SET_GLOBAL_MONTH', payload: monthStr });
-  }, []);
-
   // ─── COMPUTED METRICS ────────────────────────────────────────
-  const getMetrics = useCallback((targetMonth = state.globalMonth) => {
-    const monthSales = state.sales.filter(s => s.date?.startsWith(targetMonth));
-    const monthExpenses = state.expenses.filter(e => e.date?.startsWith(targetMonth));
-    const monthInvoices = state.invoices.filter(i => i.date?.startsWith(targetMonth));
-
-    const monthIncome = monthSales.reduce((a, s) => a + (s.total || 0), 0);
-    const monthExpenseTotal = monthExpenses.reduce((a, e) => a + (e.amount || 0), 0);
-    
-    let monthProductCost = 0;
-    monthSales.forEach(sale => {
-      (sale.items || []).forEach(item => {
-        const product = state.products.find(p => p.id === item.productId);
-        const pCost = product ? (product.purchasePrice || 0) : 0;
-        monthProductCost += (item.qty || 0) * pCost;
-      });
-    });
-    const monthProfit = monthIncome - monthProductCost - monthExpenseTotal;
-
-    const todayDate = today();
-    const todaySales = state.sales.filter(s => s.date === todayDate);
-    const todayExpenses = state.expenses.filter(e => e.date === todayDate);
-
+  const getMetrics = useCallback(() => {
+    const todayStr = today();
+    const todaySales = state.sales.filter(s => s.date === todayStr);
+    const todayExpenses = state.expenses.filter(e => e.date === todayStr);
     const todayIncome = todaySales.reduce((a, s) => a + (s.total || 0), 0);
     const todayExpenseTotal = todayExpenses.reduce((a, e) => a + (e.amount || 0), 0);
-    
-    let todayProductCost = 0;
-    todaySales.forEach(sale => {
-      (sale.items || []).forEach(item => {
-        const product = state.products.find(p => p.id === item.productId);
-        const pCost = product ? (product.purchasePrice || 0) : 0;
-        todayProductCost += (item.qty || 0) * pCost;
-      });
-    });
-    const todayProfit = todayIncome - todayProductCost - todayExpenseTotal;
+    const todayProfit = todayIncome - todayExpenseTotal;
+
+    const monthStr = todayStr.slice(0, 7);
+    const monthSales = state.sales.filter(s => s.date?.startsWith(monthStr));
+    const monthExpenses = state.expenses.filter(e => e.date?.startsWith(monthStr));
+    const monthIncome = monthSales.reduce((a, s) => a + (s.total || 0), 0);
+    const monthExpenseTotal = monthExpenses.reduce((a, e) => a + (e.amount || 0), 0);
+    const monthProfit = monthIncome - monthExpenseTotal;
 
     const totalInventoryValue = state.products.reduce((a, p) => a + (p.stock || 0) * (p.purchasePrice || 0), 0);
     const lowStockProducts = state.products.filter(p => p.stock > 0 && p.stock <= (p.minStock || 5));
     const outOfStockProducts = state.products.filter(p => !p.stock || p.stock <= 0);
 
     return {
-      monthIncome, monthExpenseTotal, monthProfit, monthSalesCount: monthSales.length, monthInvoicesCount: monthInvoices.length,
       todayIncome, todayExpenseTotal, todayProfit, todaySalesCount: todaySales.length,
+      monthIncome, monthExpenseTotal, monthProfit, monthSalesCount: monthSales.length,
       totalInventoryValue, lowStockProducts, outOfStockProducts,
     };
-  }, [state.sales, state.expenses, state.products, state.invoices, state.globalMonth]);
+  }, [state.sales, state.expenses, state.products]);
 
   const value = {
     ...state,
@@ -472,7 +446,7 @@ export function AppProvider({ children }) {
     // Settings
     saveSetting, saveSettings,
     // Utils
-    getMetrics, notify, removeNotification, setGlobalMonth,
+    getMetrics, notify, removeNotification,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
