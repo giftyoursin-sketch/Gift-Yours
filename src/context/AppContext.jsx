@@ -106,6 +106,7 @@ const initialState = {
   notifications: [],
   loading: true,
   dbError: false,
+  globalMonth: format(new Date(), 'yyyy-MM'),
 };
 
 function reducer(state, action) {
@@ -121,6 +122,7 @@ function reducer(state, action) {
     case 'ADD_NOTIFICATION': return { ...state, notifications: [action.payload, ...state.notifications].slice(0, 20) };
     case 'REMOVE_NOTIFICATION': return { ...state, notifications: state.notifications.filter(n => n.id !== action.payload) };
     case 'SET_DB_ERROR': return { ...state, dbError: true, dbErrorMessage: action.payload, loading: false };
+    case 'SET_GLOBAL_MONTH': return { ...state, globalMonth: action.payload };
     default: return state;
   }
 }
@@ -405,6 +407,10 @@ export function AppProvider({ children }) {
     notify('Settings saved', 'success');
   }, [notify]);
 
+  const setGlobalMonth = useCallback((month) => {
+    dispatch({ type: 'SET_GLOBAL_MONTH', payload: month });
+  }, []);
+
   // ─── COMPUTED METRICS ────────────────────────────────────────
   const getMetrics = useCallback(() => {
     const todayStr = today();
@@ -468,7 +474,7 @@ export function AppProvider({ children }) {
     // Settings
     saveSetting, saveSettings,
     // Utils
-    getMetrics, notify, removeNotification,
+    getMetrics, notify, removeNotification, setGlobalMonth,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
