@@ -9,6 +9,8 @@ export default function Settings() {
     phone: settings.phone || '',
     address: settings.address || '',
     invoicePrefix: settings.invoicePrefix || 'INV',
+    productCategories: settings.productCategories || 'Photo Frames, Gift Items, Personalized Gifts, Home Decor, Photo Gifts, Customized Products, Other',
+    expenseCategories: settings.expenseCategories || 'Salary, Rent, Utilities, Marketing, Supplies, Maintenance, Taxes, Other',
   });
   const [saving, setSaving] = useState(false);
 
@@ -79,6 +81,16 @@ export default function Settings() {
                 <label className="input-label">Invoice Prefix</label>
                 <input className="input" value={form.invoicePrefix} onChange={e => set('invoicePrefix', e.target.value.toUpperCase())} placeholder="INV" maxLength={6} />
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Example: {form.invoicePrefix || 'INV'}-0001</span>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Product Categories (Comma separated)</label>
+                <textarea className="input" value={form.productCategories} onChange={e => set('productCategories', e.target.value)} placeholder="Photo Frames, Gift Items, Other..." rows={2} />
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Used in product creation and filtering.</span>
+              </div>
+              <div className="input-group">
+                <label className="input-label">Expense Categories (Comma separated)</label>
+                <textarea className="input" value={form.expenseCategories} onChange={e => set('expenseCategories', e.target.value)} placeholder="Salary, Rent, Utilities, Other..." rows={2} />
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Used in expense tracking and reports.</span>
               </div>
               <div>
                 <button type="submit" className="btn btn-primary" disabled={saving}><Save size={15} /> {saving ? 'Saving...' : 'Save Changes'}</button>

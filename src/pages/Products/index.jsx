@@ -3,11 +3,17 @@ import { Plus, Search, Edit2, Trash2, Copy, Archive, MoreVertical, Package, Filt
 import { useApp } from '../../context/AppContext';
 import ProductForm from './ProductForm';
 
-const CATEGORIES = ['All', 'Photo Frames', 'Gift Items', 'Personalized Gifts', 'Home Decor', 'Photo Gifts', 'Customized Products', 'Other'];
 const STATUS_COLORS = { active: 'success', inactive: 'muted', 'out-of-stock': 'error' };
 
 export default function Products() {
-  const { products, deleteProduct, addProduct, updateProduct } = useApp();
+  const { products, settings, deleteProduct, addProduct, updateProduct } = useApp();
+  
+  const categoriesList = useMemo(() => {
+    const cats = (settings.productCategories || 'Photo Frames, Gift Items, Personalized Gifts, Home Decor, Photo Gifts, Customized Products, Other')
+      .split(',').map(c => c.trim()).filter(Boolean);
+    return ['All', ...cats];
+  }, [settings.productCategories]);
+
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [status, setStatus] = useState('All');
@@ -50,7 +56,7 @@ export default function Products() {
           <input placeholder="Search products, SKU..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <select className="input" style={{ width: 'auto', minWidth: 160 }} value={category} onChange={e => setCategory(e.target.value)}>
-          {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+          {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select className="input" style={{ width: 'auto', minWidth: 140 }} value={status} onChange={e => setStatus(e.target.value)}>
           <option value="All">All Status</option>

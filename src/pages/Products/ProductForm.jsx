@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-
-const CATEGORIES = ['Photo Frames', 'Gift Items', 'Personalized Gifts', 'Home Decor', 'Photo Gifts', 'Customized Products', 'Other'];
+import { useApp } from '../../context/AppContext';
 
 export default function ProductForm({ product, onClose, onSave }) {
+  const { settings } = useApp();
+  const categoriesList = (settings.productCategories || 'Photo Frames, Gift Items, Personalized Gifts, Home Decor, Photo Gifts, Customized Products, Other')
+    .split(',').map(c => c.trim()).filter(Boolean);
+
   const [form, setForm] = useState({
     name: product?.name || '',
-    category: product?.category || CATEGORIES[0],
+    category: product?.category || categoriesList[0] || 'Other',
     sku: product?.sku || '',
     description: product?.description || '',
     purchasePrice: product?.purchasePrice || '',
@@ -74,7 +77,7 @@ export default function ProductForm({ product, onClose, onSave }) {
               <div className="input-group">
                 <label className="input-label">Category</label>
                 <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
-                  {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="input-group">

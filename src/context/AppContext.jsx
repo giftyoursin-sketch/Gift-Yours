@@ -102,6 +102,8 @@ const initialState = {
   settings: {
     businessName: 'Gift Yours', phone: '', address: '',
     invoicePrefix: 'INV', currency: '₹', theme: 'light', nextInvoiceNumber: 1,
+    productCategories: 'Photo Frames, Gift Items, Personalized Gifts, Home Decor, Photo Gifts, Customized Products, Other',
+    expenseCategories: 'Salary, Rent, Utilities, Marketing, Supplies, Maintenance, Taxes, Other',
   },
   notifications: [],
   loading: true,

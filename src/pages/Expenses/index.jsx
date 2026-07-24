@@ -5,15 +5,14 @@ import { useApp } from '../../context/AppContext';
 import { format, subMonths, startOfMonth, endOfMonth, parse } from 'date-fns';
 import MonthSelector from '../../components/MonthSelector';
 
-const CATEGORIES = ['Rent', 'Electricity', 'Staff Salary', 'Raw Materials', 'Packaging', 'Transportation', 'Marketing', 'Miscellaneous'];
 const PAYMENT_METHODS = ['Cash', 'UPI', 'Card', 'Bank Transfer'];
 const CATEGORY_COLORS = ['#1E1B4B', '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280'];
 
-function ExpenseForm({ onClose, onSave, expense }) {
+function ExpenseForm({ onClose, onSave, expense, categoriesList }) {
   const [form, setForm] = useState({
     title: expense?.title || '',
     amount: expense?.amount || '',
-    category: expense?.category || CATEGORIES[0],
+    category: expense?.category || categoriesList[0] || 'Other',
     date: expense?.date || format(new Date(), 'yyyy-MM-dd'),
     description: expense?.description || '',
     paymentMethod: expense?.paymentMethod || 'Cash',
@@ -53,7 +52,7 @@ function ExpenseForm({ onClose, onSave, expense }) {
               <div className="input-group">
                 <label className="input-label">Category</label>
                 <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
-                  {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="input-group">
@@ -79,7 +78,11 @@ function ExpenseForm({ onClose, onSave, expense }) {
 }
 
 export default function Expenses() {
-  const { expenses, addExpense, updateExpense, deleteExpense, globalMonth } = useApp();
+  const { expenses, addExpense, updateExpense, deleteExpense, globalMonth, settings } = useApp();
+  const categoriesList = useMemo(() => {
+    return (settings.expenseCategories || 'Salary, Rent, Utilities, Marketing, Supplies, Maintenance, Taxes, Other')
+      .split(',').map(c => c.trim()).filter(Boolean);
+  }, [settings.expenseCategories]);
   const [showForm, setShowForm] = useState(false);
   const [editExpense, setEditExpense] = useState(null);
 
@@ -241,6 +244,7 @@ export default function Expenses() {
       {showForm && (
         <ExpenseForm
           expense={editExpense}
+          categoriesList={categoriesList}
           onClose={() => setShowForm(false)}
           onSave={async (data) => {
             if (editExpense) await updateExpense(editExpense.id, data);
