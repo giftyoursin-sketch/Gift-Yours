@@ -21,7 +21,7 @@ const QUICK_ACTIONS = [
 ];
 
 export default function Dashboard() {
-  const { sales, expenses, products, invoices, getMetrics } = useApp();
+  const { sales, expenses, products, invoices, getMetrics, dbError } = useApp();
   const metrics = getMetrics();
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState(null);
@@ -85,6 +85,12 @@ export default function Dashboard() {
           <p className="page-subtitle">{format(new Date(), 'EEEE, d MMMM yyyy')} — Here's your business overview</p>
         </div>
       </div>
+      
+      {dbError && (
+        <div style={{ background: 'var(--error-light)', color: 'var(--error)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--error)', fontWeight: 600 }}>
+          ⚠️ Failed to connect to the database. If you are on Vercel, please verify that VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are correctly set in the Vercel Environment Variables (Production) and that there are no typos!
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
