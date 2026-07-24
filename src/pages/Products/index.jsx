@@ -119,7 +119,7 @@ export default function Products() {
                   <div className="price-value" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)' }}>₹{p.sellingPrice || 0}</div>
                 </div>
                 <div className="price-box" style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.625rem' }}>
-                  <div className="price-label" style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Cost</div>
+                  <div className="price-label" style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Raw Material</div>
                   <div className="price-value" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-secondary)' }}>₹{p.purchasePrice || 0}</div>
                 </div>
               </div>

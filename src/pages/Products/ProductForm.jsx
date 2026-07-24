@@ -102,7 +102,7 @@ export default function ProductForm({ product, onClose, onSave }) {
 
               {/* Pricing */}
               <div className="input-group">
-                <label className="input-label">Purchase Price (₹)</label>
+                <label className="input-label">Raw Material (₹)</label>
                 <input className="input" type="number" min="0" step="0.01" value={form.purchasePrice} onChange={e => set('purchasePrice', e.target.value)} placeholder="0.00" />
               </div>
               <div className="input-group">
