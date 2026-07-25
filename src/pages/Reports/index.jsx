@@ -30,16 +30,23 @@ export default function Reports() {
       const daySales = sales.filter(s => s.date === dateStr);
       const dayExp = expenses.filter(e => e.date === dateStr);
       const income = daySales.reduce((a, s) => a + (s.total || 0), 0);
+      const regularIncome = daySales.filter(s => s.saleType !== 'designer').reduce((a, s) => a + (s.total || 0), 0);
+      const designerIncome = daySales.filter(s => s.saleType === 'designer').reduce((a, s) => a + (s.designerCostTotal || 0), 0);
+      const printLaminationIncome = daySales.filter(s => s.saleType === 'designer').reduce((a, s) => a + (s.printLaminationTotal || 0), 0);
       const expense = dayExp.reduce((a, e) => a + (e.amount || 0), 0);
       return {
         day: format(d, 'dd MMM'),
-        income, expense, profit: income - expense,
+        income, regularIncome, designerIncome, printLaminationIncome,
+        expense, profit: income - expense,
         orders: daySales.length,
       };
     });
   }, [sales, expenses, globalMonth]);
 
   const totalIncome = dailyData.reduce((a, m) => a + m.income, 0);
+  const totalRegularIncome = dailyData.reduce((a, m) => a + m.regularIncome, 0);
+  const totalDesignerIncome = dailyData.reduce((a, m) => a + m.designerIncome, 0);
+  const totalPrintLaminationIncome = dailyData.reduce((a, m) => a + m.printLaminationIncome, 0);
   const totalExpense = dailyData.reduce((a, m) => a + m.expense, 0);
   const totalProfit = totalIncome - totalExpense;
   const totalOrders = dailyData.reduce((a, m) => a + m.orders, 0);
@@ -68,8 +75,8 @@ export default function Reports() {
   const COLORS = ['#1E1B4B', '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'];
 
   const exportCSV = () => {
-    const rows = [['Date', 'Revenue', 'Expenses', 'Profit', 'Orders']];
-    dailyData.forEach(m => rows.push([m.day, m.income, m.expense, m.profit, m.orders]));
+    const rows = [['Date', 'Total Revenue', 'Regular Sales', 'Designer Cost', 'Print & Lam.', 'Expenses', 'Profit', 'Orders']];
+    dailyData.forEach(m => rows.push([m.day, m.income, m.regularIncome, m.designerIncome, m.printLaminationIncome, m.expense, m.profit, m.orders]));
     const csv = rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -94,11 +101,11 @@ export default function Reports() {
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', marginBottom: '1.5rem' }}>
         {[
           { label: 'Total Revenue', value: fmt(totalIncome), color: 'var(--primary)', bg: 'rgba(30,27,75,0.08)' },
+          { label: 'Regular Sales', value: fmt(totalRegularIncome), color: 'var(--info)', bg: 'var(--info-light)' },
+          { label: 'Designer Cost', value: fmt(totalDesignerIncome), color: 'var(--accent)', bg: 'var(--accent-light)' },
+          { label: 'Print & Lam.', value: fmt(totalPrintLaminationIncome), color: 'var(--warning)', bg: 'var(--warning-light)' },
           { label: 'Total Expenses', value: fmt(totalExpense), color: 'var(--error)', bg: 'var(--error-light)' },
           { label: 'Net Profit', value: fmt(totalProfit), color: totalProfit >= 0 ? 'var(--success)' : 'var(--error)', bg: 'var(--success-light)' },
-          { label: 'Total Orders', value: totalOrders, color: 'var(--accent)', bg: 'var(--accent-light)' },
-          { label: 'Products', value: products.length, color: 'var(--info)', bg: 'var(--info-light)' },
-          { label: 'Customers', value: customers.length, color: 'var(--warning)', bg: 'var(--warning-light)' },
         ].map(s => (
           <div key={s.label} className="stat-card" style={{ padding: '1rem' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.25rem' }}>{s.label}</div>

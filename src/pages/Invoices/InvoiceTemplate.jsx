@@ -5,6 +5,7 @@ export default function InvoiceTemplate({ invoice }) {
     invoiceNumber, date, dueDate,
     customerName, customerPhone, customerAddress,
     businessName, businessAddress, businessPhone,
+    invoiceType = 'regular', designerItems = [], printLaminationItems = [], designerCostTotal = 0, printLaminationTotal = 0,
     items = [], subtotal = 0, discountAmt = 0, grandTotal = 0,
     paymentMethod, status, notes, terms,
   } = invoice || {};
@@ -74,38 +75,111 @@ export default function InvoiceTemplate({ invoice }) {
       </div>
 
       {/* Items Table */}
-      <div style={{ marginBottom: '8mm' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#1E1B4B' }}>
-              <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
-              <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Item Description</th>
-              <th style={{ padding: '8px 12px', textAlign: 'center', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Qty</th>
-              <th style={{ padding: '8px 12px', textAlign: 'right', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Unit Price</th>
-              <th style={{ padding: '8px 12px', textAlign: 'right', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, idx) => (
-              <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#F8F7FF', borderBottom: '1px solid #E5E7EB' }}>
-                <td style={{ padding: '8px 12px', fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>{idx + 1}</td>
-                <td style={{ padding: '8px 12px', fontSize: 11.5, fontWeight: 600 }}>{item.productName || item.name}</td>
-                <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontWeight: 700 }}>{item.qty}</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11 }}>₹{(parseFloat(item.price) || 0).toLocaleString('en-IN')}</td>
-                <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700 }}>₹{((parseFloat(item.price) || 0) * (parseInt(item.qty) || 0)).toLocaleString('en-IN')}</td>
+      {invoiceType === 'designer' ? (
+        <>
+          <div style={{ marginBottom: '8mm' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Designer Cost</div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#1E1B4B' }}>
+                  <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Item Description</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'center', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Qty</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Unit Cost</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {designerItems.length > 0 ? designerItems.map((item, idx) => (
+                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#F8F7FF', borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '8px 12px', fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>{idx + 1}</td>
+                    <td style={{ padding: '8px 12px', fontSize: 11.5, fontWeight: 600 }}>{item.productName || item.name}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontWeight: 700 }}>{item.qty}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11 }}>₹{(parseFloat(item.price) || 0).toLocaleString('en-IN')}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700 }}>₹{((parseFloat(item.price) || 0) * (parseInt(item.qty) || 0)).toLocaleString('en-IN')}</td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan="5" style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: '#9CA3AF' }}>No designer items</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ marginBottom: '8mm' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Print & Lamination</div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#1E1B4B' }}>
+                  <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Product / Item</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Size</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'center', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Qty</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {printLaminationItems.length > 0 ? printLaminationItems.map((item, idx) => (
+                  <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#F8F7FF', borderBottom: '1px solid #E5E7EB' }}>
+                    <td style={{ padding: '8px 12px', fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>{idx + 1}</td>
+                    <td style={{ padding: '8px 12px', fontSize: 11.5, fontWeight: 600 }}>{item.product}</td>
+                    <td style={{ padding: '8px 12px', fontSize: 11 }}>{item.size}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontWeight: 700 }}>{item.qty}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700 }}>₹{((parseFloat(item.amount) || 0) * (parseInt(item.qty) || 0)).toLocaleString('en-IN')}</td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan="5" style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, color: '#9CA3AF' }}>No print & lamination items</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : (
+        <div style={{ marginBottom: '8mm' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#1E1B4B' }}>
+                <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>#</th>
+                <th style={{ padding: '8px 12px', textAlign: 'left', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Item Description</th>
+                <th style={{ padding: '8px 12px', textAlign: 'center', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Qty</th>
+                <th style={{ padding: '8px 12px', textAlign: 'right', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Unit Price</th>
+                <th style={{ padding: '8px 12px', textAlign: 'right', color: '#fff', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Amount</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {items.map((item, idx) => (
+                <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#F8F7FF', borderBottom: '1px solid #E5E7EB' }}>
+                  <td style={{ padding: '8px 12px', fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>{idx + 1}</td>
+                  <td style={{ padding: '8px 12px', fontSize: 11.5, fontWeight: 600 }}>{item.productName || item.name}</td>
+                  <td style={{ padding: '8px 12px', textAlign: 'center', fontSize: 11, fontWeight: 700 }}>{item.qty}</td>
+                  <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11 }}>₹{(parseFloat(item.price) || 0).toLocaleString('en-IN')}</td>
+                  <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700 }}>₹{((parseFloat(item.price) || 0) * (parseInt(item.qty) || 0)).toLocaleString('en-IN')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Totals */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8mm' }}>
         <div style={{ width: '55%', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #E5E7EB' }}>
-            <span style={{ fontSize: 11, color: '#6B7280' }}>Subtotal</span>
-            <span style={{ fontSize: 11, fontWeight: 600 }}>₹{subtotal.toLocaleString('en-IN')}</span>
-          </div>
+          {invoiceType === 'designer' ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #E5E7EB' }}>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>Designer Cost</span>
+                <span style={{ fontSize: 11, fontWeight: 600 }}>₹{designerCostTotal.toLocaleString('en-IN')}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #E5E7EB' }}>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>Print & Lamination</span>
+                <span style={{ fontSize: 11, fontWeight: 600 }}>₹{printLaminationTotal.toLocaleString('en-IN')}</span>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #E5E7EB' }}>
+              <span style={{ fontSize: 11, color: '#6B7280' }}>Subtotal</span>
+              <span style={{ fontSize: 11, fontWeight: 600 }}>₹{subtotal.toLocaleString('en-IN')}</span>
+            </div>
+          )}
           {discountAmt > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #E5E7EB', color: '#EF4444' }}>
               <span style={{ fontSize: 11 }}>Discount</span>

@@ -18,12 +18,14 @@ export default function InvoiceBuilder() {
   const existing = id && id !== 'new' ? invoices.find(inv => inv.id === id) : null;
 
   const [form, setForm] = useState({
+    invoiceType: existing?.invoiceType || 'regular',
     customerName: existing?.customerName || '',
     customerPhone: existing?.customerPhone || '+91 ',
     customerAddress: existing?.customerAddress || '',
     date: existing?.date || format(new Date(), 'yyyy-MM-dd'),
     dueDate: existing?.dueDate || '',
     items: existing?.items || [],
+    printLaminationItems: existing?.printLaminationItems || [],
     discount: existing?.discount || 0,
     notes: existing?.notes || '',
     terms: existing?.terms || 'Thank you for your business!',
@@ -47,13 +49,13 @@ export default function InvoiceBuilder() {
     setForm(f => {
       const existing = f.items.find(i => i.productId === product.id);
       if (existing) return { ...f, items: f.items.map(i => i.productId === product.id ? { ...i, qty: i.qty + 1 } : i) };
-      return { ...f, items: [...f.items, { productId: product.id, productName: product.name, price: product.sellingPrice || 0, qty: 1 }] };
+      return { ...f, items: [...f.items, { productId: product.id, productName: product.name, price: product.sellingPrice || 0, designerPrice: product.designerCost || 0, qty: 1 }] };
     });
     setProductSearch('');
   };
 
   const addCustomItem = () => {
-    setForm(f => ({ ...f, items: [...f.items, { productId: `custom-${Date.now()}`, productName: '', price: 0, qty: 1 }] }));
+    setForm(f => ({ ...f, items: [...f.items, { productId: `custom-${Date.now()}`, productName: '', price: 0, designerPrice: 0, qty: 1 }] }));
   };
 
   const updateItem = (idx, field, value) => {
@@ -62,15 +64,47 @@ export default function InvoiceBuilder() {
 
   const removeItem = (idx) => setForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
 
-  const subtotal = form.items.reduce((a, i) => a + (parseFloat(i.price) || 0) * (parseInt(i.qty) || 0), 0);
-  const discountAmt = parseFloat(form.discount) || 0;
-  const grandTotal = subtotal - discountAmt;
+  const addPrintLamItem = () => {
+    setForm(f => ({ ...f, printLaminationItems: [...f.printLaminationItems, { id: Date.now(), product: 'Print & Lamination', size: '', qty: 1, amount: 0 }] }));
+  };
+  const updatePrintLamItem = (idx, field, value) => {
+    setForm(f => ({ ...f, printLaminationItems: f.printLaminationItems.map((item, i) => i === idx ? { ...item, [field]: value } : item) }));
+  };
+  const removePrintLamItem = (idx) => setForm(f => ({ ...f, printLaminationItems: f.printLaminationItems.filter((_, i) => i !== idx) }));
 
-  const invoiceData = { ...form, subtotal, discountAmt, grandTotal, invoiceNumber: existing?.invoiceNumber || `${settings.invoicePrefix || 'INV'}-PREVIEW`, businessName: settings.businessName || 'Gift Yours', businessAddress: settings.address, businessPhone: settings.phone };
+  const subtotal = form.items.reduce((a, i) => a + (parseFloat(i.price) || 0) * (parseInt(i.qty) || 0), 0);
+  const designerCostTotal = form.items.reduce((a, i) => a + (parseFloat(i.designerPrice) || 0) * (parseInt(i.qty) || 0), 0);
+  const printLaminationTotal = form.printLaminationItems.reduce((a, i) => a + (parseFloat(i.amount) || 0) * (parseInt(i.qty) || 0), 0);
+  const discountAmt = parseFloat(form.discount) || 0;
+  const grandTotal = form.invoiceType === 'designer' 
+    ? (designerCostTotal + printLaminationTotal - discountAmt)
+    : (subtotal - discountAmt);
+
+  const invoiceData = { 
+    ...form, 
+    subtotal, 
+    discountAmt, 
+    grandTotal, 
+    designerCostTotal,
+    printLaminationTotal,
+    designerItems: form.items.map(i => ({ productName: i.productName, qty: i.qty, price: i.designerPrice })),
+    invoiceNumber: existing?.invoiceNumber || `${settings.invoicePrefix || 'INV'}-PREVIEW`, 
+    businessName: settings.businessName || 'Gift Yours', 
+    businessAddress: settings.address, 
+    businessPhone: settings.phone 
+  };
 
   const handleSave = async () => {
     setSaving(true);
-    const data = { ...form, subtotal, discountAmt, grandTotal };
+    const data = { 
+        ...form, 
+        subtotal, 
+        discountAmt, 
+        grandTotal,
+        designerCostTotal,
+        printLaminationTotal,
+        designerItems: form.items.map(i => ({ productName: i.productName, qty: i.qty, price: i.designerPrice })),
+    };
     if (existing) await updateInvoice(existing.id, data);
     else { const inv = await addInvoice(data); navigate(`/invoices/${inv.id}/edit`); }
     setSaving(false);
@@ -194,6 +228,21 @@ Business Contact:
       <div className="grid-2" style={{ gap: '1.5rem', alignItems: 'start' }}>
         {/* Form */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Invoice Type Selection */}
+          <div className="card" style={{ padding: '1.25rem', background: form.invoiceType === 'designer' ? 'var(--primary-light, #f0fdf4)' : 'var(--surface)' }}>
+             <h4 style={{ fontWeight: 700, marginBottom: '0.75rem', fontSize: '0.9375rem' }}>Invoice Type</h4>
+             <div style={{ display: 'flex', gap: '1rem' }}>
+               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                 <input type="radio" name="invoiceType" value="regular" checked={form.invoiceType === 'regular'} onChange={e => set('invoiceType', e.target.value)} />
+                 Regular Customer
+               </label>
+               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                 <input type="radio" name="invoiceType" value="designer" checked={form.invoiceType === 'designer'} onChange={e => set('invoiceType', e.target.value)} />
+                 Designer
+               </label>
+             </div>
+          </div>
+
           {/* Customer Details */}
           <div className="card" style={{ padding: '1.25rem' }}>
             <h4 style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.9375rem' }}>Customer Details</h4>
@@ -286,6 +335,63 @@ Business Contact:
             </button>
           </div>
 
+          {/* Designer Sections */}
+          {form.invoiceType === 'designer' && (
+            <>
+              {/* Designer Cost section */}
+              <div className="card" style={{ padding: '1.25rem', borderLeft: '4px solid var(--primary)' }}>
+                <h4 style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.9375rem' }}>Designer Cost</h4>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Products added above automatically appear here. You can adjust their designer prices.</p>
+                {form.items.length > 0 ? (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 80px', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                      <span>Product</span>
+                      <span style={{ textAlign: 'center' }}>Qty</span>
+                      <span style={{ textAlign: 'right' }}>Cost</span>
+                    </div>
+                    {form.items.map((item, idx) => (
+                      <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 80px', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+                        <div style={{ fontSize: '0.8125rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.productName || 'Unnamed'}</div>
+                        <div style={{ textAlign: 'center', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{item.qty}</div>
+                        <input className="input" type="number" min="0" value={item.designerPrice} onChange={e => updateItem(idx, 'designerPrice', parseFloat(e.target.value) || 0)} placeholder="Cost" style={{ textAlign: 'right', fontSize: '0.8125rem' }} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No items added yet.</div>
+                )}
+              </div>
+
+              {/* Print & Lamination section */}
+              <div className="card" style={{ padding: '1.25rem', borderLeft: '4px solid var(--primary)' }}>
+                <h4 style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.9375rem' }}>Print & Lamination</h4>
+                {form.printLaminationItems.length > 0 && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 60px 80px 30px', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                      <span>Product / Item</span>
+                      <span>Size</span>
+                      <span style={{ textAlign: 'center' }}>Qty</span>
+                      <span style={{ textAlign: 'right' }}>Amount</span>
+                      <span></span>
+                    </div>
+                    {form.printLaminationItems.map((item, idx) => (
+                      <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 60px 80px 30px', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+                        <input className="input" value={item.product} onChange={e => updatePrintLamItem(idx, 'product', e.target.value)} placeholder="Item" style={{ fontSize: '0.8125rem' }} />
+                        <input className="input" value={item.size} onChange={e => updatePrintLamItem(idx, 'size', e.target.value)} placeholder="Size" style={{ fontSize: '0.8125rem' }} />
+                        <input className="input" type="number" min="1" value={item.qty} onChange={e => updatePrintLamItem(idx, 'qty', parseInt(e.target.value) || 1)} style={{ textAlign: 'center', fontSize: '0.8125rem' }} />
+                        <input className="input" type="number" min="0" value={item.amount} onChange={e => updatePrintLamItem(idx, 'amount', parseFloat(e.target.value) || 0)} style={{ textAlign: 'right', fontSize: '0.8125rem' }} />
+                        <button type="button" className="btn btn-ghost btn-icon-sm" onClick={() => removePrintLamItem(idx)} style={{ color: 'var(--error)' }}><X size={13} /></button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button type="button" className="btn btn-secondary btn-sm" onClick={addPrintLamItem} style={{ width: '100%' }}>
+                  <Plus size={13} /> Add Print & Lam Row
+                </button>
+              </div>
+            </>
+          )}
+
           {/* Totals + Notes */}
           <div className="card" style={{ padding: '1.25rem' }}>
             <h4 style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.9375rem' }}>Summary & Notes</h4>
@@ -295,9 +401,20 @@ Business Contact:
                 <input className="input" type="number" min="0" value={form.discount} onChange={e => set('discount', e.target.value)} placeholder="0" />
               </div>
               <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                  <span>Subtotal</span><span style={{ fontWeight: 600 }}>₹{subtotal.toLocaleString('en-IN')}</span>
-                </div>
+                {form.invoiceType === 'designer' ? (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                      <span>Designer Cost</span><span style={{ fontWeight: 600 }}>₹{designerCostTotal.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                      <span>Print & Lamination</span><span style={{ fontWeight: 600 }}>₹{printLaminationTotal.toLocaleString('en-IN')}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                    <span>Subtotal</span><span style={{ fontWeight: 600 }}>₹{subtotal.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
                 {discountAmt > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--error)' }}>
                     <span>Discount</span><span>-₹{discountAmt.toLocaleString('en-IN')}</span>

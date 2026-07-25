@@ -14,6 +14,8 @@ export default function ProductForm({ product, onClose, onSave }) {
     description: product?.description || '',
     purchasePrice: product?.purchasePrice || '',
     sellingPrice: product?.sellingPrice || '',
+    designerCost: product?.designerCost || '',
+    printLaminationDefaultPrice: product?.printLaminationDefaultPrice || '',
     stock: product?.stock || '',
     minStock: product?.minStock || 5,
     supplier: product?.supplier || '',
@@ -33,6 +35,8 @@ export default function ProductForm({ product, onClose, onSave }) {
         ...form,
         purchasePrice: parseFloat(form.purchasePrice) || 0,
         sellingPrice: parseFloat(form.sellingPrice) || 0,
+        designerCost: parseFloat(form.designerCost) || 0,
+        printLaminationDefaultPrice: parseFloat(form.printLaminationDefaultPrice) || 0,
         stock: parseInt(form.stock) || 0,
         minStock: parseInt(form.minStock) || 5,
       });
@@ -108,6 +112,14 @@ export default function ProductForm({ product, onClose, onSave }) {
               <div className="input-group">
                 <label className="input-label">Selling Price (₹)</label>
                 <input className="input" type="number" min="0" step="0.01" value={form.sellingPrice} onChange={e => set('sellingPrice', e.target.value)} placeholder="0.00" />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Designer Cost (₹)</label>
+                <input className="input" type="number" min="0" step="0.01" value={form.designerCost} onChange={e => set('designerCost', e.target.value)} placeholder="0.00" />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Print & Lam Default (₹)</label>
+                <input className="input" type="number" min="0" step="0.01" value={form.printLaminationDefaultPrice} onChange={e => set('printLaminationDefaultPrice', e.target.value)} placeholder="0.00" />
               </div>
 
               {/* Stock */}

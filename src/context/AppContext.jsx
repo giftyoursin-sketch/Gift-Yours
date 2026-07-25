@@ -19,14 +19,14 @@ const safeParseJSON = (val) => {
 const productFromDB = (p) => !p ? null : ({
   id: p.id, name: p.name, category: p.category, sku: p.sku,
   description: p.description, purchasePrice: p.purchase_price,
-  sellingPrice: p.selling_price, stock: p.stock, minStock: p.min_stock,
+  sellingPrice: p.selling_price, designerCost: p.designer_cost, printLaminationDefaultPrice: p.print_lamination_default_price, stock: p.stock, minStock: p.min_stock,
   supplier: p.supplier, notes: p.notes, status: p.status,
   createdAt: p.created_at, updatedAt: p.updated_at,
 });
 const productToDB = (p) => ({
   id: p.id, name: p.name, category: p.category, sku: p.sku,
   description: p.description, purchase_price: p.purchasePrice || 0,
-  selling_price: p.sellingPrice || 0, stock: p.stock || 0, min_stock: p.minStock || 5,
+  selling_price: p.sellingPrice || 0, designer_cost: p.designerCost || 0, print_lamination_default_price: p.printLaminationDefaultPrice || 0, stock: p.stock || 0, min_stock: p.minStock || 5,
   supplier: p.supplier, notes: p.notes, status: p.status || 'active',
   updated_at: new Date().toISOString(),
 });
@@ -34,12 +34,12 @@ const productToDB = (p) => ({
 // Sales: snake_case DB → camelCase JS
 const saleFromDB = (s) => !s ? null : ({
   id: s.id, customerId: s.customer_id, customerName: s.customer_name,
-  items: safeParseJSON(s.items), total: s.total, paymentMethod: s.payment_method,
+  items: safeParseJSON(s.items), saleType: s.sale_type, designerItems: safeParseJSON(s.designer_items), printLaminationItems: safeParseJSON(s.print_lamination_items), designerCostTotal: s.designer_cost_total, printLaminationTotal: s.print_lamination_total, total: s.total, paymentMethod: s.payment_method,
   date: s.date, notes: s.notes, createdAt: s.created_at,
 });
 const saleToDB = (s) => ({
   id: s.id, customer_id: s.customerId, customer_name: s.customerName,
-  items: s.items || [], total: s.total || 0, payment_method: s.paymentMethod || 'Cash',
+  items: s.items || [], sale_type: s.saleType || 'regular', designer_items: s.designerItems || [], print_lamination_items: s.printLaminationItems || [], designer_cost_total: s.designerCostTotal || 0, print_lamination_total: s.printLaminationTotal || 0, total: s.total || 0, payment_method: s.paymentMethod || 'Cash',
   date: s.date, notes: s.notes, updated_at: new Date().toISOString(),
 });
 
@@ -48,7 +48,7 @@ const invoiceFromDB = (i) => !i ? null : ({
   id: i.id, invoiceNumber: i.invoice_number, customerId: i.customer_id,
   customerName: i.customer_name, customerPhone: i.customer_phone,
   customerAddress: i.customer_address, date: i.date, dueDate: i.due_date,
-  items: safeParseJSON(i.items), subtotal: i.subtotal, discount: i.discount,
+  items: safeParseJSON(i.items), invoiceType: i.invoice_type, designerItems: safeParseJSON(i.designer_items), printLaminationItems: safeParseJSON(i.print_lamination_items), designerCostTotal: i.designer_cost_total, printLaminationTotal: i.print_lamination_total, subtotal: i.subtotal, discount: i.discount,
   discountAmt: i.discount_amt, grandTotal: i.grand_total, status: i.status,
   paymentMethod: i.payment_method, notes: i.notes, terms: i.terms,
   createdAt: i.created_at,
@@ -57,7 +57,7 @@ const invoiceToDB = (i) => ({
   id: i.id, invoice_number: i.invoiceNumber, customer_id: i.customerId,
   customer_name: i.customerName, customer_phone: i.customerPhone,
   customer_address: i.customerAddress, date: i.date, due_date: i.dueDate,
-  items: i.items || [], subtotal: i.subtotal || 0, discount: i.discount || 0,
+  items: i.items || [], invoice_type: i.invoiceType || 'regular', designer_items: i.designerItems || [], print_lamination_items: i.printLaminationItems || [], designer_cost_total: i.designerCostTotal || 0, print_lamination_total: i.printLaminationTotal || 0, subtotal: i.subtotal || 0, discount: i.discount || 0,
   discount_amt: i.discountAmt || 0, grand_total: i.grandTotal || 0,
   status: i.status || 'pending', payment_method: i.paymentMethod || 'Cash',
   notes: i.notes, terms: i.terms, updated_at: new Date().toISOString(),
@@ -342,6 +342,11 @@ export function AppProvider({ children }) {
       customerId: invoice.customerId,
       customerName: invoice.customerName,
       items: invoice.items,
+      saleType: invoice.invoiceType,
+      designerItems: invoice.designerItems,
+      printLaminationItems: invoice.printLaminationItems,
+      designerCostTotal: invoice.designerCostTotal,
+      printLaminationTotal: invoice.printLaminationTotal,
       total: invoice.grandTotal,
       paymentMethod: invoice.paymentMethod,
       date: invoice.date,
@@ -438,6 +443,12 @@ export function AppProvider({ children }) {
     const monthSales = state.sales.filter(s => s.date?.startsWith(monthStr));
     const monthExpenses = state.expenses.filter(e => e.date?.startsWith(monthStr));
     const monthIncome = monthSales.reduce((a, s) => a + (s.total || 0), 0);
+    
+    // Split revenues
+    const regularSalesRevenue = monthSales.filter(s => s.saleType !== 'designer').reduce((a, s) => a + (s.total || 0), 0);
+    const designerSalesRevenue = monthSales.filter(s => s.saleType === 'designer').reduce((a, s) => a + (s.designerCostTotal || 0), 0);
+    const printLaminationRevenue = monthSales.filter(s => s.saleType === 'designer').reduce((a, s) => a + (s.printLaminationTotal || 0), 0);
+
     const monthExpenseTotal = monthExpenses.reduce((a, e) => a + (e.amount || 0), 0);
     
     let monthProductCost = 0;
@@ -457,6 +468,7 @@ export function AppProvider({ children }) {
     return {
       todayIncome, todayExpenseTotal, todayProfit, todaySalesCount: todaySales.length,
       monthIncome, monthExpenseTotal, monthProfit, monthSalesCount: monthSales.length,
+      regularSalesRevenue, designerSalesRevenue, printLaminationRevenue,
       totalInventoryValue, lowStockProducts, outOfStockProducts,
     };
   }, [state.sales, state.expenses, state.products]);
