@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   TrendingUp, TrendingDown, ShoppingCart, Package,
   AlertTriangle, Plus, FileText, RefreshCw, ArrowRight,
-  IndianRupee, Layers, Users, Receipt, X
+  IndianRupee, Layers, Users, Receipt, X, Trash2
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -21,10 +21,11 @@ const QUICK_ACTIONS = [
 ];
 
 export default function Dashboard() {
-  const { sales, expenses, products, invoices, getMetrics, dbError, dbErrorMessage } = useApp();
+  const { sales, expenses, products, invoices, getMetrics, dbError, dbErrorMessage, deleteSale } = useApp();
   const metrics = getMetrics();
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState(null);
+  const [selectedSaleForDetails, setSelectedSaleForDetails] = useState(null);
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const monthStr = format(new Date(), 'yyyy-MM');
@@ -297,7 +298,7 @@ export default function Dashboard() {
                         <thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th></tr></thead>
                         <tbody>
                           {(activeModal.startsWith('month') ? monthSalesList : todaySalesList).map(s => (
-                            <tr key={s.id}>
+                            <tr key={s.id} onClick={() => setSelectedSaleForDetails(s)} style={{ cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                               <td>#{s.id?.slice(-4) || s.invoiceId?.slice(-4)}</td>
                               <td>{s.customerName || 'Walk-in'}</td>
                               <td style={{ fontSize: '0.8125rem' }}>{format(new Date(s.date), 'dd MMM')}</td>
@@ -356,6 +357,109 @@ export default function Dashboard() {
                 </span>
               </div>
 
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sale Details Modal */}
+      {selectedSaleForDetails && (
+        <div className="modal-overlay" onClick={() => setSelectedSaleForDetails(null)} style={{ zIndex: 1000 }}>
+          <div className="modal" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>Sale Details</h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setSelectedSaleForDetails(null)}><X size={18} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '70vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Customer</div>
+                  <div style={{ fontWeight: 600 }}>{selectedSaleForDetails.customerName || 'Walk-in'}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Date</div>
+                  <div style={{ fontWeight: 600 }}>{format(new Date(selectedSaleForDetails.date), 'dd MMM yyyy')}</div>
+                </div>
+              </div>
+
+              {selectedSaleForDetails.items && selectedSaleForDetails.items.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Products</h4>
+                  <div className="table-responsive">
+                    <table className="table" style={{ fontSize: '0.8125rem' }}>
+                      <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                      <tbody>
+                        {selectedSaleForDetails.items.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.productName || item.name}</td>
+                            <td>{item.qty}</td>
+                            <td>{fmt(item.price)}</td>
+                            <td style={{ fontWeight: 600 }}>{fmt((item.qty || 0) * (item.price || 0))}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {selectedSaleForDetails.designerItems && selectedSaleForDetails.designerItems.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Designer Cost</h4>
+                  <div className="table-responsive">
+                    <table className="table" style={{ fontSize: '0.8125rem' }}>
+                      <thead><tr><th>Item</th><th>Cost</th></tr></thead>
+                      <tbody>
+                        {selectedSaleForDetails.designerItems.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.productName || item.name}</td>
+                            <td style={{ fontWeight: 600 }}>{fmt(item.designerCost)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {selectedSaleForDetails.printLaminationItems && selectedSaleForDetails.printLaminationItems.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Print & Lamination</h4>
+                  <div className="table-responsive">
+                    <table className="table" style={{ fontSize: '0.8125rem' }}>
+                      <thead><tr><th>Item</th><th>Cost</th></tr></thead>
+                      <tbody>
+                        {selectedSaleForDetails.printLaminationItems.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.productName || item.name}</td>
+                            <td style={{ fontWeight: 600 }}>{fmt(item.printLaminationCost)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginTop: '0.5rem', padding: '1rem', background: 'var(--surface-2)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: 600 }}>Total Amount</span>
+                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--success)' }}>{fmt(selectedSaleForDetails.total)}</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button 
+                  className="btn btn-error" 
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this sale? This will also restore the stock.')) {
+                      deleteSale(selectedSaleForDetails.id);
+                      setSelectedSaleForDetails(null);
+                    }
+                  }}
+                >
+                  <Trash2 size={16} /> Delete Sale
+                </button>
+              </div>
             </div>
           </div>
         </div>
