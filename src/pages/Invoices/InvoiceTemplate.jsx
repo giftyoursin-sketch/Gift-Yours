@@ -10,7 +10,7 @@ export default function InvoiceTemplate({ invoice }) {
     paymentMethod, status, notes, terms,
   } = invoice || {};
 
-  const STATUS_COLORS = { paid: '#10B981', pending: '#F59E0B', partial: '#EF4444' };
+  const STATUS_COLORS = { paid: '#10B981', unpaid: '#F59E0B', partial: '#EF4444' };
   const statusColor = STATUS_COLORS[status] || '#6B7280';
 
   return (
@@ -42,7 +42,7 @@ export default function InvoiceTemplate({ invoice }) {
           <div style={{ fontSize: 28, fontWeight: 900, color: '#1E1B4B', letterSpacing: '-0.02em', marginBottom: 4 }}>INVOICE</div>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#EF4444', marginBottom: 8 }}>{invoiceNumber}</div>
           <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: 20, background: statusColor + '20', color: statusColor, fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {status || 'Pending'}
+            {status || 'Unpaid'}
           </div>
         </div>
       </div>

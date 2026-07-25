@@ -7,13 +7,12 @@ import InvoiceTemplate from './InvoiceTemplate';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-const PAYMENT_METHODS = ['Cash', 'UPI', 'Card', 'Bank Transfer'];
-const STATUS_OPTIONS = ['paid', 'pending', 'partial'];
+const PAYMENT_METHODS = ['Cash', 'UPI', 'Card', 'Bank Transfer', 'Other'];
 
 export default function InvoiceBuilder() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { invoices, products, customers, addInvoice, updateInvoice, settings } = useApp();
+  const { invoices, products, customers, addInvoice, updateInvoice, receivePayment, settings } = useApp();
 
   const existing = id && id !== 'new' ? invoices.find(inv => inv.id === id) : null;
 
@@ -36,6 +35,10 @@ export default function InvoiceBuilder() {
   const [productSearch, setProductSearch] = useState('');
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({
+    date: format(new Date(), 'yyyy-MM-dd'), amount: '', method: 'Cash', notes: ''
+  });
   const previewRef = useRef();
   const printRef = useRef();
 
@@ -80,6 +83,12 @@ export default function InvoiceBuilder() {
     ? (designerCostTotal + printLaminationTotal - discountAmt)
     : (subtotal - discountAmt);
 
+  const displayStatus = form.status;
+  const advancePaid = displayStatus === 'partial' ? (parseFloat(form.advancePaid) || 0) : 0;
+  const balanceDue = displayStatus === 'partial' ? grandTotal - advancePaid : 0;
+  
+  const formatStatus = (s) => s === 'partial' ? 'Partial' : s === 'paid' ? 'Paid' : 'Unpaid';
+
   const invoiceData = { 
     ...form, 
     subtotal, 
@@ -87,6 +96,9 @@ export default function InvoiceBuilder() {
     grandTotal, 
     designerCostTotal,
     printLaminationTotal,
+    status: displayStatus,
+    advancePaid,
+    balanceDue,
     designerItems: form.items.map(i => ({ productName: i.productName, qty: i.qty, price: i.designerPrice })),
     invoiceNumber: existing?.invoiceNumber || `${settings.invoicePrefix || 'INV'}-PREVIEW`, 
     businessName: settings.businessName || 'Gift Yours', 
@@ -103,6 +115,9 @@ export default function InvoiceBuilder() {
         grandTotal,
         designerCostTotal,
         printLaminationTotal,
+        status: displayStatus,
+        advancePaid,
+        balanceDue,
         designerItems: form.items.map(i => ({ productName: i.productName, qty: i.qty, price: i.designerPrice })),
     };
     if (existing) await updateInvoice(existing.id, data);
@@ -285,9 +300,12 @@ Business Contact:
               <div className="input-group">
                 <label className="input-label">Status</label>
                 <select className="input" value={form.status} onChange={e => set('status', e.target.value)}>
-                  {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+                  <option value="unpaid">Unpaid</option>
+                  <option value="partial">Partial</option>
+                  <option value="paid">Paid</option>
                 </select>
               </div>
+              
             </div>
           </div>
 
@@ -392,22 +410,50 @@ Business Contact:
             </>
           )}
 
-          {/* Totals + Notes */}
+          {/* Totals & Payments */}
           <div className="card" style={{ padding: '1.25rem' }}>
-            <h4 style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.9375rem' }}>Summary & Notes</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div className="input-group">
-                <label className="input-label">Discount (₹)</label>
-                <input className="input" type="number" min="0" value={form.discount} onChange={e => set('discount', e.target.value)} placeholder="0" />
+            <h4 style={{ fontWeight: 700, marginBottom: '1rem', fontSize: '0.9375rem' }}>Payment & Summary</h4>
+            <div className="grid-2" style={{ gap: '1.5rem' }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div className="input-group">
+                  <label className="input-label">Discount (₹)</label>
+                  <input className="input" type="number" min="0" value={form.discount} onChange={e => set('discount', e.target.value)} placeholder="0" />
+                </div>
+                {form.status === 'partial' && (
+                  <div className="input-group" style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--surface-border)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label className="input-label">Advance Paid (₹)</label>
+                        <input className="input" type="number" min="0" value={form.advancePaid} onChange={e => set('advancePaid', e.target.value)} placeholder="0" />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <label className="input-label">Balance Due</label>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--error)' }}>
+                          ₹{balanceDue.toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="input-group">
+                  <label className="input-label">Notes</label>
+                  <textarea className="input" value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Notes for customer..." rows={2} />
+                </div>
+                <div className="input-group">
+                  <label className="input-label">Terms & Conditions</label>
+                  <textarea className="input" value={form.terms} onChange={e => set('terms', e.target.value)} placeholder="Terms..." rows={2} />
+                </div>
               </div>
-              <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+
+              <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', border: '1px solid var(--surface-border)' }}>
                 {form.invoiceType === 'designer' ? (
                   <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                       <span>Designer Cost</span><span style={{ fontWeight: 600 }}>₹{designerCostTotal.toLocaleString('en-IN')}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                      <span>Print & Lamination</span><span style={{ fontWeight: 600 }}>₹{printLaminationTotal.toLocaleString('en-IN')}</span>
+                      <span>Print & Lam.</span><span style={{ fontWeight: 600 }}>₹{printLaminationTotal.toLocaleString('en-IN')}</span>
                     </div>
                   </>
                 ) : (
@@ -420,35 +466,46 @@ Business Contact:
                     <span>Discount</span><span>-₹{discountAmt.toLocaleString('en-IN')}</span>
                   </div>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.0625rem', fontWeight: 800, borderTop: '1px solid var(--surface-border)', paddingTop: '0.5rem', color: 'var(--primary)' }}>
-                  <span>Grand Total</span><span>₹{grandTotal.toLocaleString('en-IN')}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 700, borderTop: '1px solid var(--surface-border)', paddingTop: '0.5rem' }}>
+                  <span>Invoice Total</span><span style={{ color: 'var(--primary)' }}>₹{grandTotal.toLocaleString('en-IN')}</span>
                 </div>
-              </div>
-              <div className="input-group">
-                <label className="input-label">Notes</label>
-                <textarea className="input" value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Notes for customer..." rows={2} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Terms & Conditions</label>
-                <textarea className="input" value={form.terms} onChange={e => set('terms', e.target.value)} placeholder="Terms..." rows={2} />
+                {displayStatus === 'partial' && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--success)' }}>
+                      <span>Advance Paid</span><span>₹{advancePaid.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 800, borderTop: '1px solid var(--surface-border)', paddingTop: '0.5rem', color: 'var(--error)' }}>
+                      <span>Balance Due</span><span>₹{balanceDue.toLocaleString('en-IN')}</span>
+                    </div>
+                  </>
+                )}
+                <div style={{ textAlign: 'right', marginTop: '0.25rem' }}>
+                  <span className={`badge badge-${displayStatus === 'paid' ? 'success' : displayStatus === 'partial' ? 'accent' : 'warning'}`}>
+                    {formatStatus(displayStatus)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* WhatsApp Share */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <button className="btn btn-success" onClick={handleWhatsApp} disabled={!isWhatsAppValid || generating} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+            <button className="btn btn-primary" onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem' }}>
+              <Save size={16} /> {saving ? 'Saving...' : 'Save Invoice'}
+            </button>
+            <button className="btn btn-success" onClick={handleWhatsApp} disabled={!isWhatsAppValid || generating} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
               </svg>
               {generating ? 'Preparing Invoice...' : 'Send Invoice via WhatsApp'}
             </button>
-            {!isWhatsAppValid && (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--error)', textAlign: 'center', marginTop: '0.25rem' }}>
-                Please enter a valid WhatsApp number.
-              </p>
-            )}
           </div>
+          {!isWhatsAppValid && (
+            <p style={{ fontSize: '0.8125rem', color: 'var(--error)', textAlign: 'right', marginTop: '0.25rem' }}>
+              Please enter a valid WhatsApp number.
+            </p>
+          )}
         </div>
 
         {/* Live Preview */}
@@ -468,6 +525,8 @@ Business Contact:
           <InvoiceTemplate invoice={invoiceData} />
         </div>
       </div>
+
+
     </div>
   );
 }

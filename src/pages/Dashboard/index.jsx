@@ -72,9 +72,9 @@ export default function Dashboard() {
     { label: "Today's Profit", value: fmt(metrics.todayProfit), icon: IndianRupee, color: metrics.todayProfit >= 0 ? 'var(--primary)' : 'var(--error)', bg: 'var(--primary-alpha-10)', sub: 'Net today', onClick: () => setActiveModal('today_profit') },
     { label: 'Monthly Revenue', value: fmt(metrics.monthIncome), icon: Receipt, color: 'var(--accent)', bg: 'var(--accent-light)', sub: `${metrics.monthSalesCount} orders`, onClick: () => setActiveModal('month_sales') },
     { label: 'Monthly Profit', value: fmt(metrics.monthProfit), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: 'This month', onClick: () => setActiveModal('month_profit') },
+    { label: 'Total Invoices', value: invoices.length, icon: FileText, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: `${metrics.paidInvoicesCount} Pd, ${metrics.partiallyPaidInvoicesCount} Part, ${metrics.unpaidInvoicesCount} Unpd`, to: '/invoices' },
     { label: 'Inventory Value', value: fmt(metrics.totalInventoryValue), icon: Layers, color: 'var(--info)', bg: 'var(--info-light)', sub: `${products.length} products`, to: '/inventory' },
     { label: 'Low Stock', value: metrics.lowStockProducts.length, icon: AlertTriangle, color: 'var(--warning)', bg: 'var(--warning-light)', sub: 'Need restock', to: '/inventory' },
-    { label: 'Total Invoices', value: invoices.length, icon: FileText, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: 'Invoices created', to: '/invoices' },
   ];
 
   return (

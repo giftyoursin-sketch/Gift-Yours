@@ -77,8 +77,7 @@ export default function Customers() {
     const customerSales = sales.filter(s => s.customerId === customerId);
     const customerInvoices = invoices.filter(i => i.customerId === customerId);
     const lifetimeValue = customerSales.reduce((a, s) => a + (s.total || 0), 0);
-    const pendingAmount = customerInvoices.filter(i => i.status === 'pending').reduce((a, i) => a + (i.grandTotal || 0), 0);
-    return { orders: customerSales.length, lifetimeValue, pendingAmount, invoices: customerInvoices.length };
+    return { orders: customerSales.length, lifetimeValue, invoices: customerInvoices.length };
   };
 
   const handleEdit = (c) => { setEditCustomer(c); setShowForm(true); };
@@ -92,7 +91,7 @@ export default function Customers() {
   };
 
   const viewStats = viewCustomer ? getCustomerStats(viewCustomer.id) : null;
-  const viewSales = viewCustomer ? sales.filter(s => s.customerId === viewCustomer.id).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
+  const viewInvoices = viewCustomer ? invoices.filter(i => i.customerId === viewCustomer.id).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
 
   return (
     <div className="page">
@@ -142,18 +141,14 @@ export default function Customers() {
                   </button>
                 </div>
 
-                <div className="grid-3" style={{ gap: '0.5rem' }}>
+                <div className="grid-2" style={{ gap: '0.5rem' }}>
                   <div style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.5rem', textAlign: 'center' }}>
                     <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)' }}>{stats.orders}</div>
                     <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600 }}>ORDERS</div>
                   </div>
                   <div style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.5rem', textAlign: 'center' }}>
                     <div style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--success)' }}>₹{stats.lifetimeValue.toLocaleString('en-IN')}</div>
-                    <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600 }}>LIFETIME</div>
-                  </div>
-                  <div style={{ background: stats.pendingAmount > 0 ? 'var(--error-light)' : 'var(--surface-2)', borderRadius: '8px', padding: '0.5rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: 800, color: stats.pendingAmount > 0 ? 'var(--error)' : 'var(--text-muted)' }}>₹{stats.pendingAmount.toLocaleString('en-IN')}</div>
-                    <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600 }}>PENDING</div>
+                    <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', fontWeight: 600 }}>SPENT</div>
                   </div>
                 </div>
               </div>
@@ -199,7 +194,6 @@ export default function Customers() {
                   { label: 'Total Orders', value: viewStats.orders },
                   { label: 'Lifetime Value', value: `₹${viewStats.lifetimeValue.toLocaleString('en-IN')}`, color: 'var(--success)' },
                   { label: 'Total Invoices', value: viewStats.invoices },
-                  { label: 'Pending', value: `₹${viewStats.pendingAmount.toLocaleString('en-IN')}`, color: viewStats.pendingAmount > 0 ? 'var(--error)' : 'var(--text-secondary)' },
                 ].map(s => (
                   <div key={s.label} style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)', padding: '0.875rem' }}>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{s.label}</div>
@@ -221,17 +215,19 @@ export default function Customers() {
                 </div>
               )}
 
-              {viewSales.length > 0 && (
+              {viewInvoices.length > 0 && (
                 <div>
-                  <div style={{ fontWeight: 700, marginBottom: '0.75rem' }}>Purchase History</div>
+                  <div style={{ fontWeight: 700, marginBottom: '0.75rem' }}>Invoice History</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {viewSales.map(s => (
-                      <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.625rem 0.875rem', background: 'var(--surface-2)', borderRadius: 'var(--radius)' }}>
+                    {viewInvoices.map(i => (
+                      <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.625rem 0.875rem', background: 'var(--surface-2)', borderRadius: 'var(--radius)' }}>
                         <div>
-                          <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>Sale #{s.id?.slice(-6).toUpperCase()}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.date} · {(s.items || []).length} item(s)</div>
+                          <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>{i.invoiceNumber}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{i.date} · <span className={`badge badge-${i.status === 'paid' ? 'success' : i.status === 'partial' ? 'accent' : 'warning'}`} style={{ padding: '2px 4px', fontSize: 10 }}>{i.status || 'pending'}</span></div>
                         </div>
-                        <div style={{ fontWeight: 700, color: 'var(--success)' }}>₹{(s.total || 0).toLocaleString('en-IN')}</div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: 700 }}>₹{(i.grandTotal || 0).toLocaleString('en-IN')}</div>
+                        </div>
                       </div>
                     ))}
                   </div>

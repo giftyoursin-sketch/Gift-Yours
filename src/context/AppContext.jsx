@@ -50,6 +50,7 @@ const invoiceFromDB = (i) => !i ? null : ({
   customerAddress: i.customer_address, date: i.date, dueDate: i.due_date,
   items: safeParseJSON(i.items), invoiceType: i.invoice_type, designerItems: safeParseJSON(i.designer_items), printLaminationItems: safeParseJSON(i.print_lamination_items), designerCostTotal: i.designer_cost_total, printLaminationTotal: i.print_lamination_total, subtotal: i.subtotal, discount: i.discount,
   discountAmt: i.discount_amt, grandTotal: i.grand_total, status: i.status,
+  advancePaid: i.advance_paid, paidAmount: i.paid_amount, balanceDue: i.balance_due, paymentHistory: safeParseJSON(i.payment_history),
   paymentMethod: i.payment_method, notes: i.notes, terms: i.terms,
   createdAt: i.created_at,
 });
@@ -59,7 +60,8 @@ const invoiceToDB = (i) => ({
   customer_address: i.customerAddress, date: i.date, due_date: i.dueDate,
   items: i.items || [], invoice_type: i.invoiceType || 'regular', designer_items: i.designerItems || [], print_lamination_items: i.printLaminationItems || [], designer_cost_total: i.designerCostTotal || 0, print_lamination_total: i.printLaminationTotal || 0, subtotal: i.subtotal || 0, discount: i.discount || 0,
   discount_amt: i.discountAmt || 0, grand_total: i.grandTotal || 0,
-  status: i.status || 'pending', payment_method: i.paymentMethod || 'Cash',
+  status: i.status || 'unpaid',
+  payment_method: i.paymentMethod || 'Cash',
   notes: i.notes, terms: i.terms, updated_at: new Date().toISOString(),
 });
 
@@ -326,6 +328,9 @@ export function AppProvider({ children }) {
       invoiceNumber: `${state.settings.invoicePrefix || 'INV'}-${String(num).padStart(4, '0')}`,
       createdAt: new Date().toISOString(),
     };
+
+    invoice.status = data.status || 'unpaid';
+
     const { error } = await supabase.from('invoices').insert([{ ...invoiceToDB(invoice), created_at: invoice.createdAt }]);
     if (error) { notify('Failed to create invoice', 'error'); console.error(error); return; }
 
@@ -373,6 +378,10 @@ export function AppProvider({ children }) {
     dispatch({ type: 'SET_INVOICES', payload: state.invoices.filter(i => i.id !== id) });
     notify('Invoice deleted', 'success');
   }, [state.invoices, notify]);
+
+  const receivePayment = useCallback(async (invoiceId, paymentData) => {
+    // Disabled feature since user did not run DB migration
+  }, []);
 
   // ─── EXPENSES ────────────────────────────────────────────────
   const addExpense = useCallback(async (data) => {
@@ -465,11 +474,26 @@ export function AppProvider({ children }) {
     const lowStockProducts = state.products.filter(p => p.stock > 0 && p.stock <= (p.minStock || 5));
     const outOfStockProducts = state.products.filter(p => !p.stock || p.stock <= 0);
 
+    let todayReceivedPayments = 0;
+    state.invoices.forEach(inv => {
+      (inv.paymentHistory || []).forEach(p => {
+        if (p.date === todayStr) todayReceivedPayments += (parseFloat(p.amount) || 0);
+      });
+    });
+    
+    const outstandingBalance = state.invoices.reduce((a, i) => a + (i.status !== 'paid' ? (parseFloat(i.grandTotal) || 0) : 0), 0);
+    const totalDueAmount = state.invoices.reduce((a, i) => a + (i.status !== 'paid' ? (parseFloat(i.grandTotal) || 0) : 0), 0);
+    const paidInvoicesCount = state.invoices.filter(i => i.status === 'paid').length;
+    const partiallyPaidInvoicesCount = state.invoices.filter(i => i.status === 'partial').length;
+    const unpaidInvoicesCount = state.invoices.filter(i => i.status === 'unpaid').length;
+
     return {
       todayIncome, todayExpenseTotal, todayProfit, todaySalesCount: todaySales.length,
       monthIncome, monthExpenseTotal, monthProfit, monthSalesCount: monthSales.length,
       regularSalesRevenue, designerSalesRevenue, printLaminationRevenue,
       totalInventoryValue, lowStockProducts, outOfStockProducts,
+      todayReceivedPayments, outstandingBalance, totalDueAmount,
+      paidInvoicesCount, partiallyPaidInvoicesCount, unpaidInvoicesCount
     };
   }, [state.sales, state.expenses, state.products]);
 
@@ -482,7 +506,7 @@ export function AppProvider({ children }) {
     // Sales
     addSale, updateSale, deleteSale,
     // Invoices
-    addInvoice, updateInvoice, deleteInvoice,
+    addInvoice, updateInvoice, deleteInvoice, receivePayment,
     // Expenses
     addExpense, updateExpense, deleteExpense,
     // Settings
