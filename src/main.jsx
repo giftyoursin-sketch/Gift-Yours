@@ -1,11 +1,50 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import BusinessApp from '@business/app/App'
+import EcommerceApp from '@ecommerce/app/App'
+import '@business/styles/index.css'
+
+// ─── Root Router ─────────────────────────────────────────────────────────────
+// During development, a single Vite dev server serves both apps:
+//   /business/*  →  Business Management System
+//   /*           →  Customer E-commerce Website (coming soon)
+//
+// In production, each app will be deployed independently on Vercel:
+//   business.giftyours.com  →  Business App
+//   giftyours.com           →  E-commerce App
+// ──────────────────────────────────────────────────────────────────────────────
+
+function RootApp() {
+  const hostname = window.location.hostname;
+  const isBusinessVercel = hostname === 'gift-yours.vercel.app';
+  
+  if (isBusinessVercel) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/*" element={<BusinessApp />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Business Management — all /business/* routes */}
+        <Route path="/business/*" element={<BusinessApp />} />
+
+        {/* E-commerce Customer Website — all other routes */}
+        <Route path="/*" element={<EcommerceApp />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <RootApp />
   </StrictMode>,
 )
 
