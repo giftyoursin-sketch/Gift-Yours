@@ -168,21 +168,21 @@ export default function Home() {
       <section className="features-section" style={{ backgroundColor: 'var(--color-bg-alt)', padding: 'var(--space-2xl) 0' }}>
         <div className="container grid-cols-3 features-container">
           <div className="feature-item" style={{ textAlign: 'center', padding: '1rem' }}>
-            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
+            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
               <Truck size={20} color="#111" />
             </div>
             <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '0.9375rem' }}>Fast Delivery</h4>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>Pan India delivery with secure packaging for delicate items.</p>
           </div>
           <div className="feature-item" style={{ textAlign: 'center', padding: '1rem' }}>
-            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
+            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
               <ShieldCheck size={20} color="#111" />
             </div>
             <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '0.9375rem' }}>Premium Quality</h4>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>We use the best materials to ensure your memories last a lifetime.</p>
           </div>
           <div className="feature-item" style={{ textAlign: 'center', padding: '1rem' }}>
-            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
+            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
               <Gift size={20} color="#111" />
             </div>
             <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '0.9375rem' }}>Personalized</h4>
@@ -285,8 +285,8 @@ export default function Home() {
             height: 40px !important;
             margin: 0 auto 0.75rem !important;
             box-shadow: none !important;
-            background: var(--color-bg-alt) !important;
-            border: 1px solid var(--color-border);
+            background: #f1f5f9 !important;
+            border: none !important;
           }
           .feature-item .feature-icon-wrap svg {
             width: 20px !important;
