@@ -51,6 +51,34 @@ export default function Home() {
   }
   const newArrivals = products.slice(4, 8);
 
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=2000&auto=format&fit=crop',
+      badge: 'New Collection',
+      title: <>Preserve Your Memories in <span style={{ color: 'var(--color-primary-light)' }}>Premium Frames</span></>,
+      subtitle: 'High-quality personalized gifts, custom frames, and professional visiting cards crafted with perfection.',
+      primaryBtn: { text: 'Shop Frames', link: '/category/frames' },
+      secondaryBtn: { text: 'Explore All', link: '/products' }
+    },
+    {
+      image: 'https://images.unsplash.com/photo-1512316616428-103328e19c36?q=80&w=2000&auto=format&fit=crop',
+      badge: 'Exclusive Gifts',
+      title: <>Make Every Occasion <span style={{ color: 'var(--color-primary-light)' }}>Unforgettable</span></>,
+      subtitle: 'Find the perfect customized present for birthdays, anniversaries, and corporate events.',
+      primaryBtn: { text: 'Shop Gifts', link: '/products' },
+      secondaryBtn: { text: 'View Collection', link: '/products' }
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
   return (
     <div>
       <SEO />
@@ -62,34 +90,60 @@ export default function Home() {
         overflow: 'hidden',
         backgroundColor: 'var(--color-bg-alt)'
       }}>
-        {/* Placeholder Hero Background */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 0,
-          background: `url('https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat`
-        }} />
-        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }} />
+        {slides.map((slide, index) => (
+          <div key={index} style={{
+            position: 'absolute', inset: 0, zIndex: 0,
+            opacity: currentSlide === index ? 1 : 0,
+            transition: 'opacity 1s ease-in-out',
+            background: `url('${slide.image}') center/cover no-repeat`
+          }} />
+        ))}
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
         
         <div className="container" style={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
-          <span className="badge badge-accent hero-badge" style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem' }}>
-            New Collection
-          </span>
-          <h1 className="h1" style={{ color: '#fff', marginBottom: '1rem', maxWidth: '800px', margin: '0 auto 1rem' }}>
-            Preserve Your Memories in <span style={{ color: 'var(--color-primary-light)' }}>Premium Frames</span>
-          </h1>
-          <p className="subtitle desktop-only" style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '2.5rem', maxWidth: '600px', margin: '0 auto 2.5rem' }}>
-            High-quality personalized gifts, custom frames, and professional visiting cards crafted with perfection.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }} className="hero-actions">
-            <Link to="/category/frames" className="btn btn-accent" style={{ padding: '1rem 2rem', fontSize: '1.0625rem' }}>
-              Shop Frames
-            </Link>
-            <Link to="/products" className="btn desktop-only" style={{ 
-              padding: '1rem 2rem', fontSize: '1.0625rem', 
-              background: 'rgba(255,255,255,0.2)', color: '#fff', 
-              backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.3)' 
-            }}>
-              Explore All
-            </Link>
+          <div key={currentSlide} style={{ animation: 'heroFadeInUp 0.8s ease-out forwards' }}>
+            <span className="badge badge-accent hero-badge" style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem' }}>
+              {slides[currentSlide].badge}
+            </span>
+            <h1 className="h1" style={{ color: '#fff', marginBottom: '1rem', maxWidth: '800px', margin: '0 auto 1rem' }}>
+              {slides[currentSlide].title}
+            </h1>
+            <p className="subtitle desktop-only" style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '2.5rem', maxWidth: '600px', margin: '0 auto 2.5rem' }}>
+              {slides[currentSlide].subtitle}
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }} className="hero-actions">
+              <Link to={slides[currentSlide].primaryBtn.link} className="btn btn-accent" style={{ padding: '1rem 2rem', fontSize: '1.0625rem' }}>
+                {slides[currentSlide].primaryBtn.text}
+              </Link>
+              <Link to={slides[currentSlide].secondaryBtn.link} className="btn desktop-only" style={{ 
+                padding: '1rem 2rem', fontSize: '1.0625rem', 
+                background: 'rgba(255,255,255,0.2)', color: '#fff', 
+                backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.3)' 
+              }}>
+                {slides[currentSlide].secondaryBtn.text}
+              </Link>
+            </div>
+          </div>
+
+          {/* Slide Indicators */}
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '2rem' }}>
+            {slides.map((_, index) => (
+              <button 
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                style={{
+                  width: currentSlide === index ? '24px' : '8px',
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: currentSlide === index ? 'var(--color-primary-light)' : 'rgba(255,255,255,0.5)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  padding: 0
+                }}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -316,6 +370,11 @@ export default function Home() {
             font-size: 0.8125rem !important;
             margin: 0 !important;
           }
+        }
+        
+        @keyframes heroFadeInUp {
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

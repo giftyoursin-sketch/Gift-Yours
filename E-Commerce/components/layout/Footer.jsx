@@ -12,23 +12,23 @@ export default function Footer() {
 
   return (
     <footer style={{
-      backgroundColor: 'var(--color-bg-alt)',
-      borderTop: '1px solid var(--color-border)',
-      paddingTop: 'var(--space-2xl)',
-      paddingBottom: 'var(--space-md)',
-      marginTop: 'var(--space-3xl)'
+      backgroundColor: 'var(--bg-alt)',
+      borderTop: '1px solid var(--surface-border)',
+      paddingTop: '3rem',
+      paddingBottom: '1rem',
+      marginTop: '4rem'
     }} className="footer-wrapper">
       <div className="container">
-        <div className="grid-cols-4 footer-grid" style={{ marginBottom: 'var(--space-2xl)' }}>
+        <div className="grid-cols-4 footer-grid" style={{ marginBottom: '3rem' }}>
           {/* Brand Info */}
           <div>
             <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', textDecoration: 'none' }} className="footer-logo-link">
               <img src="/logo.png" alt={brandName} style={{ height: '36px', objectFit: 'contain' }} className="footer-logo" />
             </Link>
-            <p className="footer-brand-text" style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem', marginBottom: '1.5rem', maxWidth: '280px' }}>
+            <p className="footer-brand-text" style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', marginBottom: '1.5rem', maxWidth: '280px' }}>
               Premium personalized gifts and frames for your loved ones. Make every moment special with {brandName}.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', color: 'var(--color-primary)' }}>
+            <div style={{ display: 'flex', gap: '1rem', color: 'var(--primary)' }}>
               <span className="footer-heading" style={{ fontSize: '0.875rem', fontWeight: 600 }}>Follow us on Social Media</span>
             </div>
           </div>
@@ -39,13 +39,13 @@ export default function Footer() {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {categories.slice(0, 5).map(cat => (
                 <li key={cat}>
-                  <Link to={`/category/${toSlug(cat)}`} style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>
+                  <Link to={`/category/${toSlug(cat)}`} style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
                     {cat}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link to={`/products`} style={{ color: 'var(--color-primary)', fontSize: '0.9375rem', fontWeight: 500 }}>
+                <Link to={`/products`} style={{ color: 'var(--primary)', fontSize: '0.9375rem', fontWeight: 500 }}>
                   View All Products →
                 </Link>
               </li>
@@ -56,12 +56,12 @@ export default function Footer() {
           <div className="desktop-only" style={{ flexDirection: 'column' }}>
             <h4 className="footer-heading" style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.5rem' }}>Support</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <li><Link to="/about" style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>About Us</Link></li>
-              <li><Link to="/contact" style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Contact Us</Link></li>
-              <li><Link to="/faq" style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>FAQs</Link></li>
-              <li><Link to="/shipping" style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Shipping Policy</Link></li>
-              <li><Link to="/returns" style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Returns & Refunds</Link></li>
-              <li><Link to="/track" style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Track Order</Link></li>
+              <li><Link to="/about" style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>About Us</Link></li>
+              <li><Link to="/contact" style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Contact Us</Link></li>
+              <li><Link to="/faq" style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>FAQs</Link></li>
+              <li><Link to="/shipping" style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Shipping Policy</Link></li>
+              <li><Link to="/returns" style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Returns & Refunds</Link></li>
+              <li><Link to="/track" style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Track Order</Link></li>
             </ul>
           </div>
 
@@ -69,13 +69,13 @@ export default function Footer() {
           <div>
             <h4 className="footer-heading" style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.5rem' }}>Get in Touch</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-              <li className="footer-contact-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>
+              <li className="footer-contact-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
                 <Phone size={16} /> <span>{phone}</span>
               </li>
-              <li className="footer-contact-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>
+              <li className="footer-contact-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
                 <Mail size={16} /> <span>{email}</span>
               </li>
-              <li className="footer-contact-item" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>
+              <li className="footer-contact-item" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
                 <MapPin size={16} style={{ flexShrink: 0, marginTop: '0.25rem' }} /> 
                 <span>123 Gift Street, Design District, 400001</span>
               </li>
@@ -97,20 +97,20 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="footer-bottom-bar" style={{
-          paddingTop: 'var(--space-md)',
-          borderTop: '1px solid var(--color-border)',
+          paddingTop: '2rem',
+          borderTop: '1px solid var(--surface-border)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           gap: '1rem',
           textAlign: 'center'
         }}>
-          <p style={{ color: 'var(--color-text-light)', fontSize: '0.875rem', margin: 0 }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0 }}>
             &copy; {new Date().getFullYear()} {brandName}. All rights reserved.
           </p>
           <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
-            <Link to="/privacy" style={{ color: 'var(--color-text-light)', fontSize: '0.75rem' }}>Privacy Policy</Link>
-            <Link to="/terms" style={{ color: 'var(--color-text-light)', fontSize: '0.75rem' }}>Terms of Service</Link>
+            <Link to="/privacy" style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Privacy Policy</Link>
+            <Link to="/terms" style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Terms of Service</Link>
           </div>
         </div>
       </div>
