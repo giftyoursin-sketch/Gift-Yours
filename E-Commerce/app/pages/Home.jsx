@@ -42,7 +42,13 @@ export default function Home() {
     );
   }
 
-  const featuredProducts = products.slice(0, 4);
+  const frame12x8 = products.find(p => p.name.toLowerCase().includes('12x8'));
+  let featuredProducts = [];
+  if (frame12x8) {
+    featuredProducts = [frame12x8, ...products.filter(p => p.id !== frame12x8.id).slice(0, 3)];
+  } else {
+    featuredProducts = products.slice(0, 4);
+  }
   const newArrivals = products.slice(4, 8);
 
   return (
