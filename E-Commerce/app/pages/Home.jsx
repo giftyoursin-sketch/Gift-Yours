@@ -165,28 +165,34 @@ export default function Home() {
       </section>
 
       {/* ─── FEATURES / WHY CHOOSE US ─── */}
-      <section style={{ backgroundColor: 'var(--color-bg-alt)', padding: 'var(--space-2xl) 0' }}>
+      <section className="features-section" style={{ backgroundColor: 'var(--color-bg-alt)', padding: 'var(--space-2xl) 0' }}>
         <div className="container grid-cols-3 features-container">
           <div className="feature-item" style={{ textAlign: 'center', padding: '2rem' }}>
             <div className="feature-icon-wrap" style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
               <Truck size={32} color="#111" />
             </div>
-            <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Fast Delivery</h4>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Pan India delivery with secure packaging for delicate items.</p>
+            <div className="feature-text">
+              <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Fast Delivery</h4>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Pan India delivery with secure packaging for delicate items.</p>
+            </div>
           </div>
           <div className="feature-item" style={{ textAlign: 'center', padding: '2rem' }}>
             <div className="feature-icon-wrap" style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
               <ShieldCheck size={32} color="#111" />
             </div>
-            <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Premium Quality</h4>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>We use the best materials to ensure your memories last a lifetime.</p>
+            <div className="feature-text">
+              <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Premium Quality</h4>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>We use the best materials to ensure your memories last a lifetime.</p>
+            </div>
           </div>
           <div className="feature-item" style={{ textAlign: 'center', padding: '2rem' }}>
             <div className="feature-icon-wrap" style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
               <Gift size={32} color="#111" />
             </div>
-            <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Personalized</h4>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Customized completely to your requirements with expert design.</p>
+            <div className="feature-text">
+              <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Personalized</h4>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Customized completely to your requirements with expert design.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -257,35 +263,47 @@ export default function Home() {
             height: 24px !important;
           }
           
-          /* Features Scroll */
+          /* Features Vertical List (Compact) */
+          .features-section {
+            padding: 1.5rem 0 !important;
+          }
           .features-container {
             display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
+            flex-direction: column;
             gap: 1rem;
-            padding: 1rem !important;
-            scrollbar-width: none;
+            padding: 0 1rem !important;
           }
-          .features-container::-webkit-scrollbar { display: none; }
           .feature-item {
-            min-width: 200px;
-            scroll-snap-align: start;
-            padding: 1rem !important;
-            background: var(--surface) !important;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            text-align: left !important;
+            padding: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border-radius: 0;
           }
           .feature-item .feature-icon-wrap {
-            width: 48px !important;
-            height: 48px !important;
-            margin-bottom: 0.75rem !important;
+            margin: 0 1rem 0 0 !important;
+            width: 40px !important;
+            height: 40px !important;
+            box-shadow: none !important;
+            background: var(--color-bg-alt) !important;
+            border: 1px solid var(--color-border);
           }
           .feature-item .feature-icon-wrap svg {
-            width: 24px !important;
-            height: 24px !important;
+            width: 20px !important;
+            height: 20px !important;
           }
-          .feature-item h4 {
-            font-size: 1rem !important;
+          .feature-text {
+            flex: 1;
+          }
+          .feature-text h4 {
+            font-size: 0.9375rem !important;
+            margin-bottom: 0.25rem !important;
+          }
+          .feature-text p {
+            font-size: 0.8125rem !important;
+            margin: 0 !important;
           }
         }
       `}</style>
