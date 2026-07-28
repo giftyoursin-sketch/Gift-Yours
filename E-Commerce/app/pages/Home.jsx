@@ -167,32 +167,26 @@ export default function Home() {
       {/* ─── FEATURES / WHY CHOOSE US ─── */}
       <section className="features-section" style={{ backgroundColor: 'var(--color-bg-alt)', padding: 'var(--space-2xl) 0' }}>
         <div className="container grid-cols-3 features-container">
-          <div className="feature-item" style={{ textAlign: 'center', padding: '2rem' }}>
-            <div className="feature-icon-wrap" style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-              <Truck size={32} color="#111" />
+          <div className="feature-item" style={{ textAlign: 'center', padding: '1rem' }}>
+            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
+              <Truck size={20} color="#111" />
             </div>
-            <div className="feature-text">
-              <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Fast Delivery</h4>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Pan India delivery with secure packaging for delicate items.</p>
-            </div>
+            <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '0.9375rem' }}>Fast Delivery</h4>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>Pan India delivery with secure packaging for delicate items.</p>
           </div>
-          <div className="feature-item" style={{ textAlign: 'center', padding: '2rem' }}>
-            <div className="feature-icon-wrap" style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-              <ShieldCheck size={32} color="#111" />
+          <div className="feature-item" style={{ textAlign: 'center', padding: '1rem' }}>
+            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
+              <ShieldCheck size={20} color="#111" />
             </div>
-            <div className="feature-text">
-              <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Premium Quality</h4>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>We use the best materials to ensure your memories last a lifetime.</p>
-            </div>
+            <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '0.9375rem' }}>Premium Quality</h4>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>We use the best materials to ensure your memories last a lifetime.</p>
           </div>
-          <div className="feature-item" style={{ textAlign: 'center', padding: '2rem' }}>
-            <div className="feature-icon-wrap" style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-              <Gift size={32} color="#111" />
+          <div className="feature-item" style={{ textAlign: 'center', padding: '1rem' }}>
+            <div className="feature-icon-wrap" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--color-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem', boxShadow: 'var(--shadow-sm)' }}>
+              <Gift size={20} color="#111" />
             </div>
-            <div className="feature-text">
-              <h4 className="h4" style={{ marginBottom: '0.5rem' }}>Personalized</h4>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>Customized completely to your requirements with expert design.</p>
-            </div>
+            <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '0.9375rem' }}>Personalized</h4>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>Customized completely to your requirements with expert design.</p>
           </div>
         </div>
       </section>
@@ -263,29 +257,33 @@ export default function Home() {
             height: 24px !important;
           }
           
-          /* Features Vertical List (Compact) */
+          /* Features Scroll (Compact Cards) */
           .features-section {
             padding: 1.5rem 0 !important;
           }
           .features-container {
             display: flex;
-            flex-direction: column;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
             gap: 1rem;
-            padding: 0 1rem !important;
+            padding: 1rem !important;
+            scrollbar-width: none;
+            flex-direction: row;
           }
+          .features-container::-webkit-scrollbar { display: none; }
           .feature-item {
-            display: flex;
-            align-items: center;
-            text-align: left !important;
-            padding: 0 !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            border-radius: 0;
+            min-width: 160px;
+            scroll-snap-align: start;
+            padding: 1rem !important;
+            background: var(--surface) !important;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            text-align: center !important;
           }
           .feature-item .feature-icon-wrap {
-            margin: 0 1rem 0 0 !important;
             width: 40px !important;
             height: 40px !important;
+            margin: 0 auto 0.75rem !important;
             box-shadow: none !important;
             background: var(--color-bg-alt) !important;
             border: 1px solid var(--color-border);
@@ -294,14 +292,11 @@ export default function Home() {
             width: 20px !important;
             height: 20px !important;
           }
-          .feature-text {
-            flex: 1;
-          }
-          .feature-text h4 {
+          .feature-item h4 {
             font-size: 0.9375rem !important;
             margin-bottom: 0.25rem !important;
           }
-          .feature-text p {
+          .feature-item p {
             font-size: 0.8125rem !important;
             margin: 0 !important;
           }
