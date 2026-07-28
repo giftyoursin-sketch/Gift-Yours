@@ -106,13 +106,24 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid-cols-3 mobile-carousel">
-          {[
-            { name: 'Frames', img: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop' },
-            { name: 'Visiting Cards', img: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800&auto=format&fit=crop' }, // Business cards
-            { name: 'Gifts', img: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop' }
-          ].map((cat, i) => {
-            return (
+        <div className="grid-cols-4 mobile-carousel">
+          {(() => {
+            const dynamicCats = categories.slice(0, 3).map((cat, i) => {
+              const images = [
+                'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop', // Frames
+                'https://images.unsplash.com/photo-1628157588553-5eeea00af15c?q=80&w=800&auto=format&fit=crop', // Cards
+                'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop'  // Gifts
+              ];
+              return { name: cat, img: images[i % images.length] };
+            });
+            
+            // Add Visiting Cards to the list
+            const displayCategories = [
+              ...dynamicCats,
+              { name: 'Visiting Cards', img: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?q=80&w=800&auto=format&fit=crop' } // Better image for business cards
+            ];
+
+            return displayCategories.map((cat, i) => (
               <Link key={cat.name} to={`/category/${toSlug(cat.name)}`} className="mobile-category-card" style={{ 
                 position: 'relative', borderRadius: 'var(--radius-xl)', overflow: 'hidden',
                 aspectRatio: '4/5', display: 'flex', alignItems: 'flex-end', padding: '2rem',
@@ -144,8 +155,8 @@ export default function Home() {
                   </div>
                 </div>
               </Link>
-            )
-          })}
+            ));
+          })()}
         </div>
       </section>
 
