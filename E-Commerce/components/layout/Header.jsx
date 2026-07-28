@@ -61,7 +61,7 @@ export default function Header() {
         padding: '0 1rem'
       }}>
         {/* Left: Mobile Menu Toggle & Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           <button 
             className="btn-icon desktop-only" 
             style={{ display: 'inline-flex' }} 
@@ -71,24 +71,23 @@ export default function Header() {
             <Menu size={24} />
           </button>
           
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-            <img src="/logo.png" alt={brandName} style={{ height: '36px', objectFit: 'contain' }} className="desktop-logo" />
-            <img src="/logo.png" alt={brandName} style={{ height: '28px', objectFit: 'contain' }} className="mobile-logo mobile-only" />
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+            <img src="/logo.png" alt={brandName} className="header-logo" />
           </Link>
         </div>
 
         {/* Mobile Search Bar (Visible only on mobile) */}
-        <div className="mobile-only" style={{ flex: 1, padding: '0 0.5rem', marginLeft: '0.5rem' }}>
+        <div className="mobile-only" style={{ flex: 1, padding: '0 0.5rem 0 1rem', display: 'flex', alignItems: 'center' }}>
           <form onSubmit={handleSearch} style={{ width: '100%' }}>
-             <div className="input-wrapper" style={{ position: 'relative' }}>
-               <Search size={14} className="input-icon" style={{ left: '0.75rem', position: 'absolute', top: '50%', transform: 'translateY(-50%)' }} />
+             <div className="input-wrapper" style={{ position: 'relative', width: '100%' }}>
+               <Search size={14} className="input-icon" style={{ left: '0.75rem', position: 'absolute', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                <input 
                   type="text" 
-                  className="input" 
-                  placeholder="Search products..." 
+                  className="input mobile-search-input" 
+                  placeholder="Search..." 
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  style={{ width: '100%', padding: '0.4rem 1rem 0.4rem 2.25rem', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-alt)', fontSize: '0.8125rem', border: '1px solid var(--surface-border)' }}
+                  style={{ width: '100%', padding: '0.5rem 1rem 0.5rem 2.25rem', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-alt)', fontSize: '0.875rem', border: '1px solid var(--surface-border)' }}
                />
              </div>
            </form>
@@ -230,6 +229,17 @@ export default function Header() {
       )}
       
       <style>{`
+        .header-logo {
+          height: 36px;
+          object-fit: contain;
+        }
+        
+        @media (max-width: 768px) {
+          .header-logo {
+            height: 28px;
+          }
+        }
+        
         @media (min-width: 768px) {
           #mobile-menu-btn { display: none !important; }
           #mobile-search-btn { display: none !important; }
