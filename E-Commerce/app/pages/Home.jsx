@@ -5,7 +5,7 @@ import { useAuth } from '../AuthContext';
 import ProductCard from '@shared/components/ProductCard';
 import SEO from '../../components/SEO';
 import { toSlug } from '@shared/utils/imageUtils';
-import { ArrowRight, Star, Truck, ShieldCheck, Gift } from 'lucide-react';
+import { ArrowRight, Star, Truck, ShieldCheck, Gift, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@supabaseClient';
 
 export default function Home() {
@@ -52,9 +52,17 @@ export default function Home() {
     }
   ];
 
+  const nextSlide = () => {
+    setCurrentSlide(prev => (prev + 1) % slides.length);
+  };
+  
+  const prevSlide = () => {
+    setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
+  };
+
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % slides.length);
+      nextSlide();
     }, 5000);
     return () => clearInterval(timer);
   }, [slides.length]);
@@ -100,6 +108,36 @@ export default function Home() {
         ))}
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1 }} />
         
+        {/* Navigation Arrows */}
+        <button 
+          onClick={prevSlide}
+          className="btn-icon desktop-only"
+          style={{ 
+            position: 'absolute', left: '2rem', top: '50%', transform: 'translateY(-50%)', zIndex: 3,
+            background: 'rgba(255,255,255,0.1)', color: '#fff', backdropFilter: 'blur(4px)',
+            border: '1px solid rgba(255,255,255,0.2)', width: '48px', height: '48px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
+            cursor: 'pointer'
+          }}
+          aria-label="Previous Slide"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <button 
+          onClick={nextSlide}
+          className="btn-icon desktop-only"
+          style={{ 
+            position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)', zIndex: 3,
+            background: 'rgba(255,255,255,0.1)', color: '#fff', backdropFilter: 'blur(4px)',
+            border: '1px solid rgba(255,255,255,0.2)', width: '48px', height: '48px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
+            cursor: 'pointer'
+          }}
+          aria-label="Next Slide"
+        >
+          <ChevronRight size={24} />
+        </button>
+
         <div className="container" style={{ position: 'relative', zIndex: 2, textAlign: 'center' }}>
           <div key={currentSlide} style={{ animation: 'heroFadeInUp 0.8s ease-out forwards' }}>
             <span className="badge badge-accent hero-badge" style={{ marginBottom: '1.5rem', padding: '0.5rem 1rem' }}>
