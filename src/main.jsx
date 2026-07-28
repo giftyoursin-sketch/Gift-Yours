@@ -17,26 +17,29 @@ import '@business/styles/index.css'
 
 function RootApp() {
   const hostname = window.location.hostname;
-  const isBusinessVercel = hostname === 'gift-yours.vercel.app';
   
-  if (isBusinessVercel) {
+  // If the URL contains 'e-commerce', serve the E-Commerce app at the root
+  const isEcommerceVercel = hostname.includes('e-commerce');
+  
+  if (isEcommerceVercel) {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/*" element={<BusinessApp />} />
+          {/* Business Management — still accessible at /business if needed */}
+          <Route path="/business/*" element={<BusinessApp />} />
+
+          {/* E-commerce Customer Website — at the root */}
+          <Route path="/*" element={<EcommerceApp />} />
         </Routes>
       </BrowserRouter>
     );
   }
 
+  // Otherwise (for gift-yours.vercel.app or localhost), serve the Business Management app at the root
   return (
     <BrowserRouter>
       <Routes>
-        {/* Business Management — all /business/* routes */}
-        <Route path="/business/*" element={<BusinessApp />} />
-
-        {/* E-commerce Customer Website — all other routes */}
-        <Route path="/*" element={<EcommerceApp />} />
+        <Route path="/*" element={<BusinessApp />} />
       </Routes>
     </BrowserRouter>
   )
