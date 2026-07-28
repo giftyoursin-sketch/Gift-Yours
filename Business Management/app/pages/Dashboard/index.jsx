@@ -1,0 +1,476 @@
+import React, { useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  TrendingUp, TrendingDown, ShoppingCart, Package,
+  AlertTriangle, Plus, FileText, RefreshCw, ArrowRight,
+  IndianRupee, Layers, Users, Receipt, X, Trash2
+} from 'lucide-react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend
+} from 'recharts';
+import { useApp } from '@business/app/AppContext';
+import { format, subDays, startOfMonth, eachDayOfInterval } from 'date-fns';
+
+const fmt = (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`;
+
+const QUICK_ACTIONS = [
+  { label: 'New Invoice', icon: FileText, to: '/business/invoices/new', color: 'var(--primary)', bg: 'var(--primary-alpha-10)' },
+  { label: 'Add Product', icon: Package, to: '/business/products', color: 'var(--success)', bg: 'var(--success-light)' },
+  { label: 'Add Expense', icon: TrendingDown, to: '/business/expenses', color: 'var(--warning)', bg: 'var(--warning-light)' },
+];
+
+export default function Dashboard() {
+  const { sales, expenses, products, invoices, getMetrics, dbError, dbErrorMessage, deleteSale } = useApp();
+  const metrics = getMetrics();
+  const navigate = useNavigate();
+  const [activeModal, setActiveModal] = useState(null);
+  const [selectedSaleForDetails, setSelectedSaleForDetails] = useState(null);
+
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const monthStr = format(new Date(), 'yyyy-MM');
+  const todaySalesList = sales.filter(s => s.date === todayStr);
+  const todayExpenseList = expenses.filter(e => e.date === todayStr);
+  const monthSalesList = sales.filter(s => s.date?.startsWith(monthStr));
+  const monthExpenseList = expenses.filter(e => e.date?.startsWith(monthStr));
+
+  // Build last 14 days chart data
+  const chartData = useMemo(() => {
+    const days = Array.from({ length: 14 }, (_, i) => subDays(new Date(), 13 - i));
+    return days.map(d => {
+      const dateStr = format(d, 'yyyy-MM-dd');
+      const dayIncome = sales.filter(s => s.date === dateStr).reduce((a, s) => a + (s.total || 0), 0);
+      const dayExpense = expenses.filter(e => e.date === dateStr).reduce((a, e) => a + (e.amount || 0), 0);
+      return { date: format(d, 'dd MMM'), income: dayIncome, expense: dayExpense, profit: dayIncome - dayExpense };
+    });
+  }, [sales, expenses]);
+
+  // Top products by sales
+  const topProducts = useMemo(() => {
+    const map = {};
+    sales.forEach(s => {
+      (s.items || []).forEach(item => {
+        if (!map[item.productId]) map[item.productId] = { name: item.productName, qty: 0, revenue: 0 };
+        map[item.productId].qty += item.qty || 0;
+        map[item.productId].revenue += (item.qty || 0) * (item.price || 0);
+      });
+    });
+    return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+  }, [sales]);
+
+  // Recent activity
+  const recentActivity = useMemo(() => {
+    const all = [
+      ...sales.slice(-5).map(s => ({ ...s, _type: 'sale', _label: `Sale #${s.id?.slice(-4)}`, _amount: s.total, _color: 'var(--success)' })),
+      ...expenses.slice(-5).map(e => ({ ...e, _type: 'expense', _label: e.title || 'Expense', _amount: e.amount, _color: 'var(--error)' })),
+    ];
+    return all.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
+  }, [sales, expenses]);
+
+  const STATS = [
+    { label: "Today's Sales", value: fmt(metrics.todayIncome), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: `${metrics.todaySalesCount} orders`, onClick: () => setActiveModal('today_sales') },
+    { label: "Today's Expenses", value: fmt(metrics.todayExpenseTotal), icon: TrendingDown, color: 'var(--error)', bg: 'var(--error-light)', sub: 'Spent today', onClick: () => setActiveModal('today_expenses') },
+    { label: "Today's Profit", value: fmt(metrics.todayProfit), icon: IndianRupee, color: metrics.todayProfit >= 0 ? 'var(--primary)' : 'var(--error)', bg: 'var(--primary-alpha-10)', sub: 'Net today', onClick: () => setActiveModal('today_profit') },
+    { label: 'Monthly Revenue', value: fmt(metrics.monthIncome), icon: Receipt, color: 'var(--accent)', bg: 'var(--accent-light)', sub: `${metrics.monthSalesCount} orders`, onClick: () => setActiveModal('month_sales') },
+    { label: 'Monthly Profit', value: fmt(metrics.monthProfit), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: 'This month', onClick: () => setActiveModal('month_profit') },
+    { label: 'Total Invoices', value: invoices.length, icon: FileText, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: `${metrics.paidInvoicesCount} Pd, ${metrics.partiallyPaidInvoicesCount} Part, ${metrics.unpaidInvoicesCount} Unpd`, to: '/business/invoices' },
+    { label: 'Inventory Value', value: fmt(metrics.totalInventoryValue), icon: Layers, color: 'var(--info)', bg: 'var(--info-light)', sub: `${products.length} products`, to: '/business/inventory' },
+    { label: 'Low Stock', value: metrics.lowStockProducts.length, icon: AlertTriangle, color: 'var(--warning)', bg: 'var(--warning-light)', sub: 'Need restock', to: '/business/inventory' },
+  ];
+
+  return (
+    <div className="page">
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">{getGreeting()}, {'\u{1F44B}'}</h2>
+          <p className="page-subtitle">{format(new Date(), 'EEEE, d MMMM yyyy')} — Here's your business overview</p>
+        </div>
+      </div>
+      
+      {dbError && (
+        <div style={{ background: 'var(--error-light)', color: 'var(--error)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--error)', fontWeight: 600 }}>
+          ⚠️ Failed to connect to the database. Error: {dbErrorMessage || 'Please verify that VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are correctly set.'}
+          <br /><br />
+          <small style={{ opacity: 0.8 }}>Debugging Info URL: {import.meta.env.VITE_SUPABASE_URL || 'UNDEFINED'}</small>
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        {QUICK_ACTIONS.map(({ label, icon: Icon, to, color, bg }) => (
+          <Link
+            key={to}
+            to={to}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.625rem',
+              padding: '0.625rem 1.125rem',
+              background: 'var(--surface)', border: '1.5px solid var(--surface-border)',
+              borderRadius: 'var(--radius)', cursor: 'pointer',
+              fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)',
+              textDecoration: 'none', transition: 'var(--transition)',
+              boxShadow: 'var(--shadow-xs)',
+            }}
+            className="card-hover"
+          >
+            <div style={{ width: 28, height: 28, borderRadius: '7px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon size={14} color={color} />
+            </div>
+            {label}
+          </Link>
+        ))}
+      </div>
+
+      {/* Stats Grid */}
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
+        {STATS.map(({ label, value, icon: Icon, color, bg, sub, to, onClick }) => {
+          const content = (
+            <>
+              <div className="stat-icon" style={{ background: bg, color }}>
+                <Icon size={20} />
+              </div>
+              <div className="stat-value" style={{ color }}>{value}</div>
+              <div className="stat-label">{label}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{sub}</div>
+            </>
+          );
+          return to ? (
+            <Link key={label} to={to} className="stat-card card-hover" style={{ textDecoration: 'none', display: 'block' }}>
+              {content}
+            </Link>
+          ) : onClick ? (
+            <div key={label} className="stat-card card-hover" onClick={onClick} style={{ cursor: 'pointer' }}>
+              {content}
+            </div>
+          ) : (
+            <div key={label} className="stat-card">
+              {content}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Charts Row */}
+      <div className="content-grid grid-2 mb-6" style={{ gridTemplateColumns: '2fr 1fr' }}>
+        {/* Revenue Chart */}
+        <div className="chart-card">
+          <div className="chart-title">Revenue vs Expenses</div>
+          <div className="chart-subtitle">Last 14 days</div>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#1E1B4B" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#1E1B4B" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.12} />
+                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
+              <Tooltip
+                contentStyle={{ background: 'var(--surface)', border: '1px solid var(--surface-border)', borderRadius: 10, fontSize: 13 }}
+                formatter={(v, name) => [fmt(v), name === 'income' ? 'Revenue' : name === 'expense' ? 'Expenses' : 'Profit']}
+              />
+              <Area type="monotone" dataKey="income" stroke="#1E1B4B" strokeWidth={2.5} fill="url(#incomeGrad)" />
+              <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={2} fill="url(#expenseGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Alerts */}
+        <div className="chart-card" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="chart-title">Stock Alerts</div>
+          <div className="chart-subtitle">Products needing attention</div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.625rem', overflowY: 'auto' }}>
+            {metrics.outOfStockProducts.length === 0 && metrics.lowStockProducts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
+                <div style={{ fontSize: '0.875rem' }}>All products in stock!</div>
+              </div>
+            ) : (
+              <>
+                {metrics.outOfStockProducts.slice(0, 4).map(p => (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem', background: 'var(--error-light)', borderRadius: '8px' }}>
+                    <AlertTriangle size={14} color="var(--error)" />
+                    <div style={{ flex: 1, fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                    <span className="badge badge-error">Out</span>
+                  </div>
+                ))}
+                {metrics.lowStockProducts.slice(0, 4).map(p => (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem', background: 'var(--warning-light)', borderRadius: '8px' }}>
+                    <AlertTriangle size={14} color="var(--warning)" />
+                    <div style={{ flex: 1, fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                    <span className="badge badge-warning">{p.stock} left</span>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+          <Link to="/business/inventory" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--primary)', marginTop: '1rem', textDecoration: 'none' }}>
+            View Inventory <ArrowRight size={14} />
+          </Link>
+        </div>
+      </div>
+
+      {/* Bottom Row: Top Products + Recent Activity */}
+      <div className="content-grid grid-2">
+        {/* Top Products */}
+        <div className="chart-card">
+          <div className="chart-title">Top Selling Products</div>
+          <div className="chart-subtitle">By revenue, all time</div>
+          {topProducts.length === 0 ? (
+            <div className="empty-state" style={{ padding: '2rem' }}>
+              <div className="empty-icon">📦</div>
+              <p>No sales recorded yet</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {topProducts.map((p, i) => (
+                <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '8px', background: i === 0 ? 'var(--accent-light)' : 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: i === 0 ? 'var(--accent)' : 'var(--text-secondary)', flexShrink: 0 }}>
+                    {i + 1}
+                  </div>
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.qty} sold</div>
+                  </div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>{fmt(p.revenue)}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activity */}
+        <div className="chart-card">
+          <div className="chart-title">Recent Activity</div>
+          <div className="chart-subtitle">Latest transactions</div>
+          {recentActivity.length === 0 ? (
+            <div className="empty-state" style={{ padding: '2rem' }}>
+              <div className="empty-icon">📋</div>
+              <p>No activity yet. Start by adding a sale or expense.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+              {recentActivity.map((a, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', borderBottom: i < recentActivity.length - 1 ? '1px solid var(--surface-border)' : 'none' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '8px', background: a._type === 'sale' ? 'var(--success-light)' : 'var(--error-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {a._type === 'sale' ? <TrendingUp size={14} color="var(--success)" /> : <TrendingDown size={14} color="var(--error)" />}
+                  </div>
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontSize: '0.8125rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a._label}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{a.date}</div>
+                  </div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: a._color }}>
+                    {a._type === 'sale' ? '+' : '-'}{fmt(a._amount)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modals for Breakdown */}
+      {activeModal && (
+        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+          <div className="modal" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>
+                {activeModal.startsWith('month') 
+                  ? (activeModal.endsWith('sales') ? "This Month's Sales" : activeModal.endsWith('profit') ? "This Month's Profit Breakdown" : "This Month's Expenses")
+                  : (activeModal.endsWith('sales') ? "Today's Sales" : activeModal.endsWith('profit') ? "Today's Profit Breakdown" : "Today's Expenses")
+                }
+              </h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setActiveModal(null)}><X size={18} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '70vh', overflowY: 'auto' }}>
+              
+              {(activeModal.endsWith('profit') || activeModal.endsWith('sales')) && (
+                <div>
+                  <h4 style={{ color: 'var(--success)', marginBottom: '0.75rem', fontSize: '0.9375rem', fontWeight: 600 }}>Income (From Invoices)</h4>
+                  {(activeModal.startsWith('month') ? monthSalesList : todaySalesList).length === 0 ? <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No sales found.</p> : (
+                    <div className="table-responsive">
+                      <table className="table">
+                        <thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th></tr></thead>
+                        <tbody>
+                          {(activeModal.startsWith('month') ? monthSalesList : todaySalesList).map(s => (
+                            <tr key={s.id} onClick={() => setSelectedSaleForDetails(s)} style={{ cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                              <td>#{s.id?.slice(-4) || s.invoiceId?.slice(-4)}</td>
+                              <td>{s.customerName || 'Walk-in'}</td>
+                              <td style={{ fontSize: '0.8125rem' }}>{format(new Date(s.date), 'dd MMM')}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--success)' }}>{fmt(s.total)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {activeModal.endsWith('profit') && <h4 style={{ color: 'var(--error)', marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.9375rem', fontWeight: 600 }}>Expenses</h4>}
+                </div>
+              )}
+
+              {(activeModal.endsWith('expenses') || activeModal.endsWith('profit')) && (
+                <div>
+                  {(activeModal.startsWith('month') ? monthExpenseList : todayExpenseList).length === 0 ? <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No expenses found.</p> : (
+                    <div className="table-responsive">
+                      <table className="table">
+                        <thead><tr><th>Expense</th><th>Category</th><th>Date</th><th>Amount</th></tr></thead>
+                        <tbody>
+                          {(activeModal.startsWith('month') ? monthExpenseList : todayExpenseList).map(e => (
+                            <tr key={e.id}>
+                              <td>{e.title}</td>
+                              <td><span className="badge badge-secondary">{e.category}</span></td>
+                              <td style={{ fontSize: '0.8125rem' }}>{format(new Date(e.date), 'dd MMM')}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--error)' }}>{fmt(e.amount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div style={{ 
+                marginTop: '1rem', padding: '1rem', background: 'var(--surface-2)', 
+                borderRadius: '8px', display: 'flex', justifyContent: 'space-between', 
+                alignItems: 'center', border: '1px solid var(--surface-border)' 
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Total {activeModal.endsWith('expenses') ? 'Expenses' : activeModal.endsWith('sales') ? 'Sales' : 'Net Profit'}:
+                </span>
+                <span style={{ 
+                  fontSize: '1.25rem', fontWeight: 800,
+                  color: activeModal.endsWith('expenses') ? 'var(--error)' : activeModal.endsWith('sales') ? 'var(--success)' : (activeModal.startsWith('month') ? metrics.monthProfit : metrics.todayProfit) >= 0 ? 'var(--success)' : 'var(--error)' 
+                }}>
+                  {fmt(
+                    activeModal.endsWith('expenses') 
+                      ? (activeModal.startsWith('month') ? metrics.monthExpenseTotal : metrics.todayExpenseTotal)
+                      : activeModal.endsWith('sales') 
+                        ? (activeModal.startsWith('month') ? metrics.monthIncome : metrics.todayIncome)
+                        : (activeModal.startsWith('month') ? metrics.monthProfit : metrics.todayProfit)
+                  )}
+                </span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sale Details Modal */}
+      {selectedSaleForDetails && (
+        <div className="modal-overlay" onClick={() => setSelectedSaleForDetails(null)} style={{ zIndex: 1000 }}>
+          <div className="modal" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>Sale Details</h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setSelectedSaleForDetails(null)}><X size={18} /></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '70vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Customer</div>
+                  <div style={{ fontWeight: 600 }}>{selectedSaleForDetails.customerName || 'Walk-in'}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Date</div>
+                  <div style={{ fontWeight: 600 }}>{format(new Date(selectedSaleForDetails.date), 'dd MMM yyyy')}</div>
+                </div>
+              </div>
+
+              {selectedSaleForDetails.items && selectedSaleForDetails.items.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Products</h4>
+                  <div className="table-responsive">
+                    <table className="table" style={{ fontSize: '0.8125rem' }}>
+                      <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                      <tbody>
+                        {selectedSaleForDetails.items.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.productName || item.name}</td>
+                            <td>{item.qty}</td>
+                            <td>{fmt(item.price)}</td>
+                            <td style={{ fontWeight: 600 }}>{fmt((item.qty || 0) * (item.price || 0))}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {selectedSaleForDetails.designerItems && selectedSaleForDetails.designerItems.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Designer Cost</h4>
+                  <div className="table-responsive">
+                    <table className="table" style={{ fontSize: '0.8125rem' }}>
+                      <thead><tr><th>Item</th><th>Cost</th></tr></thead>
+                      <tbody>
+                        {selectedSaleForDetails.designerItems.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.productName || item.name}</td>
+                            <td style={{ fontWeight: 600 }}>{fmt(item.designerCost)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {selectedSaleForDetails.printLaminationItems && selectedSaleForDetails.printLaminationItems.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Print & Lamination</h4>
+                  <div className="table-responsive">
+                    <table className="table" style={{ fontSize: '0.8125rem' }}>
+                      <thead><tr><th>Item</th><th>Cost</th></tr></thead>
+                      <tbody>
+                        {selectedSaleForDetails.printLaminationItems.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.productName || item.name}</td>
+                            <td style={{ fontWeight: 600 }}>{fmt(item.printLaminationCost)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginTop: '0.5rem', padding: '1rem', background: 'var(--surface-2)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: 600 }}>Total Amount</span>
+                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--success)' }}>{fmt(selectedSaleForDetails.total)}</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button 
+                  className="btn btn-error" 
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this sale? This will also restore the stock.')) {
+                      deleteSale(selectedSaleForDetails.id);
+                      setSelectedSaleForDetails(null);
+                    }
+                  }}
+                >
+                  <Trash2 size={16} /> Delete Sale
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
