@@ -31,26 +31,6 @@ export default function Home() {
     if (products.length > 0) fetchRecent();
   }, [user, products]);
 
-  if (loading) {
-    return (
-      <div className="container section flex-center" style={{ minHeight: '60vh' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <div className="skeleton" style={{ width: 48, height: 48, borderRadius: '50%' }}></div>
-          <p style={{ color: 'var(--color-text-muted)' }}>Loading premium experience...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const frame12x8 = products.find(p => p.name.toLowerCase().includes('12x8'));
-  let featuredProducts = [];
-  if (frame12x8) {
-    featuredProducts = [frame12x8, ...products.filter(p => p.id !== frame12x8.id).slice(0, 3)];
-  } else {
-    featuredProducts = products.slice(0, 4);
-  }
-  const newArrivals = products.slice(4, 8);
-
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const slides = [
@@ -78,6 +58,26 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(timer);
   }, [slides.length]);
+
+  if (loading) {
+    return (
+      <div className="container section flex-center" style={{ minHeight: '60vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div className="skeleton" style={{ width: 48, height: 48, borderRadius: '50%' }}></div>
+          <p style={{ color: 'var(--color-text-muted)' }}>Loading premium experience...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const frame12x8 = products.find(p => p.name.toLowerCase().includes('12x8'));
+  let featuredProducts = [];
+  if (frame12x8) {
+    featuredProducts = [frame12x8, ...products.filter(p => p.id !== frame12x8.id).slice(0, 3)];
+  } else {
+    featuredProducts = products.slice(0, 4);
+  }
+  const newArrivals = products.slice(4, 8);
 
   return (
     <div>
