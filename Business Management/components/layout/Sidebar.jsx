@@ -6,36 +6,41 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../app/AppContext';
 
+const getBasePath = () => {
+  return window.location.hostname.includes('e-commerce') ? '/business' : '';
+};
+
+const basePath = getBasePath();
+
 const NAV_GROUPS = [
   {
     label: 'Overview',
     items: [
-      { to: '/business', icon: LayoutDashboard, label: 'Dashboard' },
-      { to: '/business/reports', icon: BarChart3, label: 'Reports' },
+      { to: `${basePath}/`, icon: LayoutDashboard, label: 'Dashboard' },
+      { to: `${basePath}/reports`, icon: BarChart3, label: 'Reports' },
     ]
   },
   {
     label: 'Management',
     items: [
-      { to: '/business/invoices', icon: FileText, label: 'Invoices' },
-      { to: '/business/expenses', icon: TrendingDown, label: 'Expenses' },
+      { to: `${basePath}/invoices`, icon: FileText, label: 'Invoices' },
+      { to: `${basePath}/expenses`, icon: TrendingDown, label: 'Expenses' },
     ]
   },
   {
     label: 'Catalog',
     items: [
-      { to: '/business/products', icon: Package, label: 'Products' },
-      { to: '/business/inventory', icon: Layers, label: 'Inventory' },
+      { to: `${basePath}/products`, icon: Package, label: 'Products' },
+      { to: `${basePath}/inventory`, icon: Layers, label: 'Inventory' },
     ]
   },
   {
     label: 'Preferences',
     items: [
-      { to: '/business/settings', icon: Settings, label: 'Settings' },
+      { to: `${basePath}/settings`, icon: Settings, label: 'Settings' },
     ]
   }
 ];
-
 
 export default function Sidebar({ collapsed, onToggle }) {
   const { settings } = useApp();

@@ -2,12 +2,18 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Package, FileText, Layers, MoreHorizontal } from 'lucide-react';
 
+const getBasePath = () => {
+  return window.location.hostname.includes('e-commerce') ? '/business' : '';
+};
+
+const basePath = getBasePath();
+
 const BOTTOM_ITEMS = [
-  { to: '/business', icon: LayoutDashboard, label: 'Home' },
-  { to: '/business/products', icon: Package, label: 'Products' },
-  { to: '/business/invoices', icon: FileText, label: 'Invoices' },
-  { to: '/business/inventory', icon: Layers, label: 'Inventory' },
-  { to: '/business/settings', icon: MoreHorizontal, label: 'More' },
+  { to: `${basePath}/`, icon: LayoutDashboard, label: 'Home' },
+  { to: `${basePath}/products`, icon: Package, label: 'Products' },
+  { to: `${basePath}/invoices`, icon: FileText, label: 'Invoices' },
+  { to: `${basePath}/inventory`, icon: Layers, label: 'Inventory' },
+  { to: `${basePath}/settings`, icon: MoreHorizontal, label: 'More' },
 ];
 
 export default function BottomNav() {

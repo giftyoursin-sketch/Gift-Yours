@@ -77,13 +77,13 @@ export default function Topbar({ onMenuToggle }) {
         
         {/* Quick Actions Dropdown (Mobile) or Inline (Desktop) */}
         <div className="desktop-only" style={{ display: 'flex', gap: '0.5rem', marginRight: '0.5rem' }}>
-          <Link to="/business/invoices/new" className="btn btn-secondary btn-sm" title="New Invoice">
+          <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices/new`} className="btn btn-secondary btn-sm" title="New Invoice">
             <FileText size={14} /> <span style={{ fontSize: '0.75rem' }}>Invoice</span>
           </Link>
-          <Link to="/business/products" className="btn btn-secondary btn-sm" title="Add Product">
+          <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/products`} className="btn btn-secondary btn-sm" title="Add Product">
             <Package size={14} /> <span style={{ fontSize: '0.75rem' }}>Product</span>
           </Link>
-          <Link to="/business/expenses" className="btn btn-secondary btn-sm" title="Add Expense">
+          <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/expenses`} className="btn btn-secondary btn-sm" title="Add Expense">
             <TrendingDown size={14} /> <span style={{ fontSize: '0.75rem' }}>Expense</span>
           </Link>
         </div>
@@ -94,13 +94,13 @@ export default function Topbar({ onMenuToggle }) {
           </button>
           {actionsOpen && (
             <div className="dropdown-menu">
-              <Link to="/business/invoices/new" className="dropdown-item" onClick={() => setActionsOpen(false)}>
+              <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices/new`} className="dropdown-item" onClick={() => setActionsOpen(false)}>
                 <FileText size={14} /> New Invoice
               </Link>
-              <Link to="/business/products" className="dropdown-item" onClick={() => setActionsOpen(false)}>
+              <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/products`} className="dropdown-item" onClick={() => setActionsOpen(false)}>
                 <Package size={14} /> Add Product
               </Link>
-              <Link to="/business/expenses" className="dropdown-item" onClick={() => setActionsOpen(false)}>
+              <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/expenses`} className="dropdown-item" onClick={() => setActionsOpen(false)}>
                 <TrendingDown size={14} /> Add Expense
               </Link>
             </div>
@@ -149,10 +149,10 @@ export default function Topbar({ onMenuToggle }) {
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{settings.businessEmail || 'admin@giftyours.com'}</div>
               </div>
               
-              <Link to="/business/settings" className="dropdown-item" onClick={() => setProfileOpen(false)}>
+              <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/settings`} className="dropdown-item" onClick={() => setProfileOpen(false)}>
                 <User size={16} /> My Profile
               </Link>
-              <Link to="/business/settings" className="dropdown-item" onClick={() => setProfileOpen(false)}>
+              <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/settings`} className="dropdown-item" onClick={() => setProfileOpen(false)}>
                 <Settings size={16} /> Preferences
               </Link>
               

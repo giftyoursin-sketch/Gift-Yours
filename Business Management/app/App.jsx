@@ -13,7 +13,12 @@ import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 
+const getBasePath = () => {
+  return window.location.hostname.includes('e-commerce') ? '/business' : '';
+};
+
 export default function BusinessApp() {
+  const basePath = getBasePath();
   return (
     <AppProvider>
       <Routes>
@@ -27,7 +32,7 @@ export default function BusinessApp() {
           <Route path="expenses" element={<Expenses />} />
           <Route path="reports" element={<Reports />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/business" replace />} />
+          <Route path="*" element={<Navigate to={basePath || '/'} replace />} />
         </Route>
       </Routes>
     </AppProvider>

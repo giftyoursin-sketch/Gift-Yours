@@ -15,9 +15,9 @@ import { format, subDays, startOfMonth, eachDayOfInterval } from 'date-fns';
 const fmt = (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`;
 
 const QUICK_ACTIONS = [
-  { label: 'New Invoice', icon: FileText, to: '/business/invoices/new', color: 'var(--primary)', bg: 'var(--primary-alpha-10)' },
-  { label: 'Add Product', icon: Package, to: '/business/products', color: 'var(--success)', bg: 'var(--success-light)' },
-  { label: 'Add Expense', icon: TrendingDown, to: '/business/expenses', color: 'var(--warning)', bg: 'var(--warning-light)' },
+  { label: 'New Invoice', icon: FileText, to: `${getBasePath()}/invoices/new`, color: 'var(--primary)', bg: 'var(--primary-alpha-10)' },
+  { label: 'Add Product', icon: Package, to: `${getBasePath()}/products`, color: 'var(--success)', bg: 'var(--success-light)' },
+  { label: 'Add Expense', icon: TrendingDown, to: `${getBasePath()}/expenses`, color: 'var(--warning)', bg: 'var(--warning-light)' },
 ];
 
 export default function Dashboard() {
@@ -73,9 +73,9 @@ export default function Dashboard() {
     { label: "Today's Profit", value: fmt(metrics.todayProfit), icon: IndianRupee, color: metrics.todayProfit >= 0 ? 'var(--primary)' : 'var(--error)', bg: 'var(--primary-alpha-10)', sub: 'Net today', onClick: () => setActiveModal('today_profit') },
     { label: 'Monthly Revenue', value: fmt(metrics.monthIncome), icon: Receipt, color: 'var(--accent)', bg: 'var(--accent-light)', sub: `${metrics.monthSalesCount} orders`, onClick: () => setActiveModal('month_sales') },
     { label: 'Monthly Profit', value: fmt(metrics.monthProfit), icon: TrendingUp, color: 'var(--success)', bg: 'var(--success-light)', sub: 'This month', onClick: () => setActiveModal('month_profit') },
-    { label: 'Total Invoices', value: invoices.length, icon: FileText, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: `${metrics.paidInvoicesCount} Pd, ${metrics.partiallyPaidInvoicesCount} Part, ${metrics.unpaidInvoicesCount} Unpd`, to: '/business/invoices' },
-    { label: 'Inventory Value', value: fmt(metrics.totalInventoryValue), icon: Layers, color: 'var(--info)', bg: 'var(--info-light)', sub: `${products.length} products`, to: '/business/inventory' },
-    { label: 'Low Stock', value: metrics.lowStockProducts.length, icon: AlertTriangle, color: 'var(--warning)', bg: 'var(--warning-light)', sub: 'Need restock', to: '/business/inventory' },
+    { label: 'Total Invoices', value: invoices.length, icon: FileText, color: 'var(--primary)', bg: 'var(--primary-alpha-10)', sub: `${metrics.paidInvoicesCount} Pd, ${metrics.partiallyPaidInvoicesCount} Part, ${metrics.unpaidInvoicesCount} Unpd`, to: `${getBasePath()}/invoices` },
+    { label: 'Inventory Value', value: fmt(metrics.totalInventoryValue), icon: Layers, color: 'var(--info)', bg: 'var(--info-light)', sub: `${products.length} products`, to: `${getBasePath()}/inventory` },
+    { label: 'Low Stock', value: metrics.lowStockProducts.length, icon: AlertTriangle, color: 'var(--warning)', bg: 'var(--warning-light)', sub: 'Need restock', to: `${getBasePath()}/inventory` },
   ];
 
   return (
@@ -209,8 +209,8 @@ export default function Dashboard() {
               </>
             )}
           </div>
-          <Link to="/business/inventory" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--primary)', marginTop: '1rem', textDecoration: 'none' }}>
-            View Inventory <ArrowRight size={14} />
+          <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/inventory`} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--primary)', marginTop: '1rem', textDecoration: 'none' }}>
+            View full inventory <ArrowRight size={14} />
           </Link>
         </div>
       </div>

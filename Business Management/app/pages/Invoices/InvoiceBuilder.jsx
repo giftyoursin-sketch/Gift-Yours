@@ -222,7 +222,7 @@ Business Contact:
       {/* Header */}
       <div className="page-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button className="btn btn-ghost btn-icon" onClick={() => navigate('/business/invoices')}><ArrowLeft size={18} /></button>
+          <button className="btn btn-ghost btn-icon" onClick={() => navigate(`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices`)}><ArrowLeft size={18} /></button>
           <div>
             <h2 className="page-title">{existing ? `Edit ${existing.invoiceNumber}` : 'Create Invoice'}</h2>
             <p className="page-subtitle">Professional invoice for your customers</p>

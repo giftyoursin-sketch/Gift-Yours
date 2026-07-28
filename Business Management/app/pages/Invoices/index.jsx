@@ -40,7 +40,7 @@ export default function Invoices() {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <MonthSelector />
-          <Link to="/business/invoices/new" className="btn btn-primary"><Plus size={16} /> Create</Link>
+          <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices/new`} className="btn btn-primary"><Plus size={16} /> Create</Link>
         </div>
       </div>
 
@@ -76,7 +76,7 @@ export default function Invoices() {
           <div className="empty-icon"><FileText size={48} strokeWidth={1} /></div>
           <h3>No invoices found</h3>
           <p>Create your first professional invoice</p>
-          <Link to="/business/invoices/new" className="btn btn-primary"><Plus size={16} /> Create Invoice</Link>
+          <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices/new`} className="btn btn-primary"><Plus size={16} /> Create Invoice</Link>
         </div>
       ) : (
         <div className="table-container">
@@ -119,7 +119,7 @@ export default function Invoices() {
         </div>
       )}
 
-      <Link to="/business/invoices/new" className="fab" style={{ display: 'flex', textDecoration: 'none', alignItems: 'center', justifyContent: 'center' }} title="Create Invoice">
+      <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices/new`} className="fab" style={{ display: 'flex', textDecoration: 'none', alignItems: 'center', justifyContent: 'center' }} title="Create Invoice">
         <Plus size={24} />
       </Link>
     </div>
