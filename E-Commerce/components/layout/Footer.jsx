@@ -159,8 +159,8 @@ export default function Footer() {
             font-size: 0.8125rem !important;
           }
           .footer-bottom-bar {
-            padding-top: 1rem !important;
-            gap: 0.5rem !important;
+            padding-top: 1.5rem !important;
+            gap: 1.25rem !important;
           }
           .footer-bottom-bar p {
             font-size: 0.75rem !important;
