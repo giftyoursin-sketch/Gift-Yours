@@ -12,6 +12,10 @@ import {
 import { useApp } from '@business/app/AppContext';
 import { format, subDays, startOfMonth, eachDayOfInterval } from 'date-fns';
 
+const getBasePath = () => {
+  return window.location.hostname.includes('e-commerce') ? '/business' : '';
+};
+
 const fmt = (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`;
 
 const QUICK_ACTIONS = [
