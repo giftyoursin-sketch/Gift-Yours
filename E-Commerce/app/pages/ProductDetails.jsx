@@ -212,26 +212,26 @@ export default function ProductDetails() {
 
           {/* Actions */}
           {/* Actions */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem', alignItems: 'stretch' }}>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-full)', padding: '0.25rem' }}>
+          <div className="product-actions-wrapper" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem', alignItems: 'stretch' }}>
+            <div className="qty-control" style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-full)', padding: '0.25rem' }}>
               <button className="btn-icon" onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus size={16} /></button>
               <span style={{ width: '40px', textAlign: 'center', fontWeight: 600 }}>{quantity}</span>
               <button className="btn-icon" onClick={() => setQuantity(quantity + 1)}><Plus size={16} /></button>
             </div>
             
             <button 
-              className={`btn ${addedToCart ? 'btn-success' : 'btn-outline'}`} 
+              className={`btn ${addedToCart ? 'btn-success' : 'btn-outline'} action-btn-add`} 
               style={{ padding: '0 2rem', background: addedToCart ? 'var(--color-success)' : undefined, color: addedToCart ? '#fff' : undefined }} 
               disabled={isOutOfStock}
               onClick={handleAddToCart}
             >
               {addedToCart ? <CheckCircle2 size={20} /> : <ShoppingBag size={20} />}
-              {addedToCart ? 'Added to Cart' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+              <span className="desktop-only">{addedToCart ? 'Added to Cart' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
             </button>
 
             <button 
-              className="btn btn-primary" 
-              style={{ padding: '0 3rem', fontSize: '1.0625rem' }}
+              className="btn btn-primary action-btn-buy" 
+              style={{ padding: '0 3rem', fontSize: '1.0625rem', flex: 1 }}
               disabled={isOutOfStock}
               onClick={() => {
                 if (isOutOfStock) return;
@@ -243,7 +243,7 @@ export default function ProductDetails() {
             </button>
             
             <button 
-              className="btn btn-outline btn-icon" 
+              className="btn btn-outline btn-icon action-btn-wishlist desktop-only" 
               style={{ width: '56px', height: '56px', padding: 0, borderColor: isSaved ? 'var(--color-primary)' : 'var(--color-border)', color: isSaved ? 'var(--color-primary)' : 'inherit' }} 
               onClick={() => toggleWishlist(product.id)}
               title={isSaved ? "Remove from Wishlist" : "Add to Wishlist"}
@@ -395,6 +395,37 @@ export default function ProductDetails() {
           )}
         </div>
       </section>
+      
+      <style>{`
+        @media (max-width: 768px) {
+          .product-actions-wrapper {
+            position: fixed;
+            bottom: calc(56px + env(safe-area-inset-bottom));
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--surface-border);
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+            z-index: 90;
+            margin: 0 !important;
+            display: flex;
+            gap: 0.5rem !important;
+            align-items: center !important;
+          }
+          .product-actions-wrapper .qty-control {
+            display: none !important; /* Hide qty selector in mobile sticky bar for space */
+          }
+          .action-btn-add {
+            flex: 1;
+            padding: 0.75rem 0.5rem !important;
+          }
+          .action-btn-buy {
+            flex: 1;
+            padding: 0.75rem 0.5rem !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

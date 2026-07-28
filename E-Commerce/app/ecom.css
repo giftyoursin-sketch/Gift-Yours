@@ -131,16 +131,60 @@
   100% { background-position: -200% 0; }
 }
 
+/* Utilities for Responsive Display */
+.mobile-only {
+  display: none !important;
+}
+.desktop-only {
+  display: flex !important; /* Most headers/navs use flex */
+}
+
 /* Responsive Overrides */
 @media (max-width: 1024px) {
   .grid-cols-4 { grid-template-columns: repeat(3, 1fr); }
 }
+
 @media (max-width: 768px) {
-  .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
-  .h1 { font-size: 2rem; }
-  .h2 { font-size: 1.75rem; }
-  .section { padding-top: 3rem; padding-bottom: 3rem; }
+  /* Show/Hide Utilities */
+  .mobile-only { display: flex !important; }
+  .desktop-only { display: none !important; }
+
+  /* Compact Typography */
+  .h1 { font-size: 1.5rem; }
+  .h2 { font-size: 1.25rem; }
+  .h3 { font-size: 1.125rem; }
+  .subtitle { font-size: 0.875rem; }
+
+  /* Compact Spacing */
+  .section { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .container { padding-left: 1rem; padding-right: 1rem; }
+
+  /* Grid Reductions */
+  .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .grid-cols-2 { gap: 0.75rem; }
+
+  /* Buttons */
+  .btn { padding: 0.5rem 1rem; font-size: 0.875rem; }
+  .input { padding: 0.625rem 0.875rem; font-size: 0.875rem; }
+
+  /* Mobile Carousel Horizontal Scroll */
+  .mobile-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none; /* Firefox */
+  }
+  .mobile-carousel::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  .mobile-carousel > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
 }
+
 @media (max-width: 480px) {
-  .grid-cols-4, .grid-cols-3, .grid-cols-2 { grid-template-columns: 1fr; }
+  /* No changes needed here if we enforce 2-cols for products */
 }

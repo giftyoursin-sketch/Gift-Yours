@@ -110,7 +110,7 @@ export default function ProductCard({ product }) {
       </Link>
 
       {/* Content */}
-      <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div className="product-card-body" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
           <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             {product.category}
@@ -123,8 +123,8 @@ export default function ProductCard({ product }) {
         </div>
 
         <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
-          <h3 style={{ 
-            fontSize: '1.0625rem', fontWeight: 600, color: 'var(--color-text-main)', 
+          <h3 className="product-title" style={{ 
+            fontWeight: 600, color: 'var(--color-text-main)', 
             marginBottom: '0.5rem', lineHeight: 1.4,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
           }}>
@@ -134,7 +134,7 @@ export default function ProductCard({ product }) {
 
         <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-text-main)' }}>
+            <span className="product-price" style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>
               {formatPrice(product.price)}
             </span>
             {hasDiscount && (
@@ -145,7 +145,7 @@ export default function ProductCard({ product }) {
           </div>
           
           <button 
-            className="btn btn-primary btn-icon" 
+            className="btn btn-primary btn-icon mobile-compact-btn" 
             disabled={isOutOfStock}
             style={{ width: '36px', height: '36px', padding: 0 }}
             title="Add to Cart"
@@ -154,6 +154,37 @@ export default function ProductCard({ product }) {
           </button>
         </div>
       </div>
+      <style>{`
+        .product-card-body {
+          padding: 1.25rem;
+        }
+        .product-title {
+          font-size: 1.0625rem;
+        }
+        .product-price {
+          font-size: 1.125rem;
+        }
+        @media (max-width: 768px) {
+          .product-card-body {
+            padding: 0.75rem !important;
+          }
+          .product-title {
+            font-size: 0.875rem !important;
+            margin-bottom: 0.25rem !important;
+          }
+          .product-price {
+            font-size: 0.9375rem !important;
+          }
+          .mobile-compact-btn {
+            width: 28px !important;
+            height: 28px !important;
+          }
+          .mobile-compact-btn svg {
+            width: 14px !important;
+            height: 14px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

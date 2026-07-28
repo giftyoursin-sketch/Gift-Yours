@@ -58,11 +58,12 @@ export default function Header() {
         alignItems: 'center',
         justifyContent: 'space-between',
         height: '4rem',
+        padding: '0 1rem'
       }}>
         {/* Left: Mobile Menu Toggle & Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button 
-            className="btn-icon" 
+            className="btn-icon desktop-only" 
             style={{ display: 'inline-flex' }} 
             onClick={() => setMobileMenuOpen(true)}
             id="mobile-menu-btn"
@@ -71,12 +72,30 @@ export default function Header() {
           </button>
           
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-            <img src="/logo.png" alt={brandName} style={{ height: '36px', objectFit: 'contain' }} />
+            <img src="/logo.png" alt={brandName} style={{ height: '36px', objectFit: 'contain' }} className="desktop-logo" />
+            <img src="/logo.png" alt={brandName} style={{ height: '28px', objectFit: 'contain' }} className="mobile-logo mobile-only" />
           </Link>
         </div>
 
+        {/* Mobile Search Bar (Visible only on mobile) */}
+        <div className="mobile-only" style={{ flex: 1, padding: '0 0.5rem', marginLeft: '0.5rem' }}>
+          <form onSubmit={handleSearch} style={{ width: '100%' }}>
+             <div className="input-wrapper" style={{ position: 'relative' }}>
+               <Search size={14} className="input-icon" style={{ left: '0.75rem', position: 'absolute', top: '50%', transform: 'translateY(-50%)' }} />
+               <input 
+                  type="text" 
+                  className="input" 
+                  placeholder="Search products..." 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{ width: '100%', padding: '0.4rem 1rem 0.4rem 2.25rem', borderRadius: 'var(--radius-full)', background: 'var(--color-bg-alt)', fontSize: '0.8125rem', border: '1px solid var(--surface-border)' }}
+               />
+             </div>
+           </form>
+        </div>
+
         {/* Center: Desktop Navigation */}
-        <nav style={{ display: 'none' }} id="desktop-nav">
+        <nav className="desktop-only" id="desktop-nav">
           <ul style={{ display: 'flex', gap: '2rem', listStyle: 'none', margin: 0, padding: 0 }}>
             {navCategories.map(cat => (
               <li key={cat}>
@@ -99,9 +118,9 @@ export default function Header() {
           </ul>
         </nav>
 
-        {/* Right: Search & Icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <form onSubmit={handleSearch} style={{ display: 'none', position: 'relative' }} id="desktop-search">
+        {/* Right: Search & Icons (Desktop) */}
+        <div className="desktop-only" style={{ alignItems: 'center', gap: '0.5rem' }}>
+          <form onSubmit={handleSearch} style={{ position: 'relative' }} id="desktop-search">
             <div className="input-wrapper" style={{ width: '240px' }}>
               <Search size={16} className="input-icon" />
               <input 
@@ -124,9 +143,6 @@ export default function Header() {
             )}
           </form>
 
-          <Link to="/search" className="btn-icon" id="mobile-search-btn" title="Search">
-            <Search size={20} />
-          </Link>
           <Link to="/wishlist" className="btn-icon" title="Wishlist" style={{ position: 'relative' }}>
             <Heart size={20} />
             {wishlist.length > 0 && (

@@ -34,7 +34,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="desktop-only" style={{ flexDirection: 'column' }}>
             <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.5rem' }}>Shop</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {categories.slice(0, 5).map(cat => (
@@ -53,7 +53,7 @@ export default function Footer() {
           </div>
 
           {/* Support */}
-          <div>
+          <div className="desktop-only" style={{ flexDirection: 'column' }}>
             <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.5rem' }}>Support</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <li><Link to="/about" style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>About Us</Link></li>
