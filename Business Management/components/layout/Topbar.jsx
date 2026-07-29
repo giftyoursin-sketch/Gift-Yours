@@ -139,7 +139,7 @@ export default function Topbar({ onMenuToggle }) {
             onClick={() => setProfileOpen(!profileOpen)}
             className="hover-scale"
           >
-            <img src="/favicon.png" alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
+            <img src={settings.theme === 'dark' ? "/favicon-white.png" : "/favicon.png"} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
           </div>
 
           {profileOpen && (
