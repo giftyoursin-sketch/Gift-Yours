@@ -33,10 +33,19 @@ function RootApp() {
 
   // During local development, serve E-commerce at root and Business at /business
   if (isLocalhost) {
+    const isBusinessApp = window.location.pathname.startsWith('/business');
+    if (isBusinessApp) {
+      return (
+        <BrowserRouter basename="/business">
+          <Routes>
+            <Route path="/*" element={<BusinessApp />} />
+          </Routes>
+        </BrowserRouter>
+      );
+    }
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/business/*" element={<BusinessApp />} />
           <Route path="/*" element={<EcommerceApp />} />
         </Routes>
       </BrowserRouter>

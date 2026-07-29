@@ -1,17 +1,31 @@
-import React, { useState, useMemo } from 'react';
-import { Plus, Search, Eye, Trash2, Download, Share2, Copy, FileText, X, Printer } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Plus, Search, Eye, Trash2, Download, Share2, Copy, FileText, X, Printer, Edit } from 'lucide-react';
 import { useApp } from '@business/app/AppContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { format, parse } from 'date-fns';
 import MonthSelector from '@business/components/MonthSelector';
+import InvoiceTemplate from './InvoiceTemplate';
 
 const STATUS_COLORS = { paid: 'success', unpaid: 'warning', partial: 'accent' };
 
 export default function Invoices() {
-  const { invoices, customers, deleteInvoice, globalMonth } = useApp();
+  const { invoices, customers, deleteInvoice, globalMonth, settings } = useApp();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [previewInvoiceId, setPreviewInvoiceId] = useState(null);
   const navigate = useNavigate();
+
+  const previewInvoice = useMemo(() => {
+    if (!previewInvoiceId) return null;
+    const inv = invoices.find(i => i.id === previewInvoiceId);
+    if (!inv) return null;
+    return {
+      ...inv,
+      businessName: settings?.businessName || 'Gift Yours',
+      businessAddress: settings?.address,
+      businessPhone: settings?.phone,
+    };
+  }, [previewInvoiceId, invoices, settings]);
 
   const filtered = useMemo(() =>
     invoices
@@ -94,7 +108,7 @@ export default function Invoices() {
             </thead>
             <tbody>
               {filtered.map(inv => (
-                <tr key={inv.id}>
+                <tr key={inv.id} onClick={() => setPreviewInvoiceId(inv.id)} style={{ cursor: 'pointer' }} className="table-row-hover">
                   <td style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.875rem' }}>{inv.invoiceNumber}</td>
                   <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{format(new Date(inv.date), 'dd-MM-yyyy')}</td>
                   <td>
@@ -105,8 +119,13 @@ export default function Invoices() {
                   <td style={{ fontWeight: 700, fontSize: '0.9375rem' }}>₹{(inv.grandTotal || 0).toLocaleString('en-IN')}</td>
                   <td><span className={`badge badge-${STATUS_COLORS[inv.status] || 'muted'}`}>{inv.status || 'unpaid'}</span></td>
                   <td>
-                    <div style={{ display: 'flex', gap: '0.375rem' }}>
-                      <Link to={`/business/invoices/${inv.id}/edit`} className="btn btn-ghost btn-icon-sm" title="Edit/View"><Eye size={14} /></Link>
+                    <div style={{ display: 'flex', gap: '0.375rem' }} onClick={(e) => e.stopPropagation()}>
+                      <button className="btn btn-ghost btn-icon-sm" onClick={() => setPreviewInvoiceId(inv.id)} title="Preview Invoice">
+                        <Eye size={14} />
+                      </button>
+                      <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices/${inv.id}/edit`} className="btn btn-ghost btn-icon-sm" title="Edit Invoice">
+                        <Edit size={14} />
+                      </Link>
                       <button className="btn btn-ghost btn-icon-sm" onClick={() => { if (window.confirm('Delete this invoice?')) deleteInvoice(inv.id); }} title="Delete" style={{ color: 'var(--error)' }}>
                         <Trash2 size={14} />
                       </button>
@@ -122,6 +141,42 @@ export default function Invoices() {
       <Link to={`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices/new`} className="fab" style={{ display: 'flex', textDecoration: 'none', alignItems: 'center', justifyContent: 'center' }} title="Create Invoice">
         <Plus size={24} />
       </Link>
+
+      {/* Invoice Preview Modal */}
+      {previewInvoice && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(4px)', padding: '2rem'
+        }} onClick={() => setPreviewInvoiceId(null)}>
+          <div style={{
+            background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)', 
+            maxWidth: '100%', maxHeight: '100%', overflow: 'auto',
+            position: 'relative', boxShadow: 'var(--shadow-lg)'
+          }} onClick={e => e.stopPropagation()}>
+            {/* Header / Actions */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', borderBottom: '1px solid var(--surface-border)', background: 'var(--surface)', position: 'sticky', top: 0, zIndex: 10 }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700 }}>Invoice Preview</h3>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="btn btn-secondary btn-sm" onClick={() => navigate(`${window.location.hostname.includes('e-commerce') ? '/business' : ''}/invoices/${previewInvoice.id}/edit`)}>
+                  Edit Invoice
+                </button>
+                <button className="btn btn-ghost btn-icon-sm" onClick={() => setPreviewInvoiceId(null)}>
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Template Container */}
+            <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center', background: '#e5e7eb', overflowX: 'auto' }}>
+              <div style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+                <InvoiceTemplate invoice={previewInvoice} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
