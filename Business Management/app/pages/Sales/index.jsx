@@ -54,7 +54,7 @@ function SaleForm({ onClose, onSave, products, customers }) {
   const selectedCustomer = customers.find(c => c.id === form.customerId);
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="modal-overlay" onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div className="modal modal-lg">
         <div className="modal-header">
           <div>

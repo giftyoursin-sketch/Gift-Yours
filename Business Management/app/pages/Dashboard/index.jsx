@@ -280,7 +280,7 @@ export default function Dashboard() {
 
       {/* Modals for Breakdown */}
       {activeModal && (
-        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+        <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setActiveModal(null); }}>
           <div className="modal" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>
@@ -368,7 +368,7 @@ export default function Dashboard() {
 
       {/* Sale Details Modal */}
       {selectedSaleForDetails && (
-        <div className="modal-overlay" onClick={() => setSelectedSaleForDetails(null)} style={{ zIndex: 1000 }}>
+        <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelectedSaleForDetails(null); }} style={{ zIndex: 1000 }}>
           <div className="modal" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>Sale Details</h3>

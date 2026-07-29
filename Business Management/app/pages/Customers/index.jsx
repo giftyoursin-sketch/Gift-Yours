@@ -21,7 +21,7 @@ function CustomerForm({ customer, onClose, onSave }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="modal-overlay" onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-header">
           <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>{customer ? 'Edit Customer' : 'Add Customer'}</h3>

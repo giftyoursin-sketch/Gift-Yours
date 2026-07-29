@@ -28,7 +28,7 @@ function ExpenseForm({ onClose, onSave, expense, categoriesList }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="modal-overlay" onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-header">
           <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>{expense ? 'Edit Expense' : 'Add Expense'}</h3>
