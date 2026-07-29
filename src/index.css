@@ -46,6 +46,9 @@
   --radius-xl: 20px;
   --radius-full: 9999px;
 
+  /* === Charts === */
+  --chart-income: #1E1B4B;
+
   /* === Soft Shadows === */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
@@ -91,13 +94,14 @@
   --accent-hover: #E4E4E7;
   --accent-light: rgba(250, 250, 250, 0.1);
 
-  /* Semantic adjusted for dark mode */
   --success: #34D399;
   --success-light: rgba(16, 185, 129, 0.15);
   --warning: #FBBF24;
   --warning-light: rgba(245, 158, 11, 0.15);
   --error: #F87171;
   --error-light: rgba(239, 68, 68, 0.15);
+
+  --chart-income: #FFFFFF;
   --info: #60A5FA;
   --info-light: rgba(59, 130, 246, 0.15);
 

@@ -163,8 +163,8 @@ export default function Dashboard() {
             <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1E1B4B" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#1E1B4B" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--chart-income)" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="var(--chart-income)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#EF4444" stopOpacity={0.12} />
@@ -178,7 +178,7 @@ export default function Dashboard() {
                 contentStyle={{ background: 'var(--surface)', border: '1px solid var(--surface-border)', borderRadius: 10, fontSize: 13 }}
                 formatter={(v, name) => [fmt(v), name === 'income' ? 'Revenue' : name === 'expense' ? 'Expenses' : 'Profit']}
               />
-              <Area type="monotone" dataKey="income" stroke="#1E1B4B" strokeWidth={2.5} fill="url(#incomeGrad)" />
+              <Area type="monotone" dataKey="income" stroke="var(--chart-income)" strokeWidth={2.5} fill="url(#incomeGrad)" />
               <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={2} fill="url(#expenseGrad)" />
             </AreaChart>
           </ResponsiveContainer>
