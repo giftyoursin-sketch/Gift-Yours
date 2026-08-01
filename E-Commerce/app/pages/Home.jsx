@@ -373,41 +373,41 @@ export default function Home() {
 
       {/* ─── WHY GIFT YOURS (3D ICONS) ─── */}
       <section className="features-section" style={{ backgroundColor: 'var(--color-dark)', padding: '5rem 0' }}>
-        <div className="container features-header-container" style={{ textAlign: 'center' }}>
+        <div className="container features-header-container" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
           <h2 className="h2" style={{ color: '#fff' }}>Why Gift Yours</h2>
           <p className="subtitle" style={{ color: 'rgba(255,255,255,0.7)' }}>The premium gifting experience you deserve.</p>
         </div>
         <div className="container grid-cols-4 features-container mobile-carousel">
-          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center', padding: '1.5rem 1rem', borderRadius: 'var(--radius-lg)', transition: 'all 0.3s ease', cursor: 'pointer' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#374151' }} onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#1F2937' }}>
-            <div className="feature-icon-wrap" style={{ width: 48, height: 48, margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%' }}>
-              <Truck color="#fff" size={24} strokeWidth={2} />
+          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center', padding: '2.5rem 1.5rem', borderRadius: 'var(--radius-xl)', transition: 'all 0.3s ease', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#374151'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.3)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#1F2937'; e.currentTarget.style.boxShadow = 'none'; }}>
+            <div className="feature-icon-wrap" style={{ width: 64, height: 64, margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-primary)', borderRadius: '50%' }}>
+              <Truck size={28} strokeWidth={2} />
             </div>
-            <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '1rem', color: '#fff' }}>Same Day Delivery</h4>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Fast & secure packaging.</p>
+            <h4 style={{ marginBottom: '0.5rem', fontSize: '1.125rem', fontWeight: 600, color: '#fff' }}>Same Day Delivery</h4>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9375rem', lineHeight: 1.5, margin: 0 }}>Fast & secure packaging.</p>
           </div>
           
-          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center', padding: '1.5rem 1rem', borderRadius: 'var(--radius-lg)', transition: 'all 0.3s ease', cursor: 'pointer' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#374151' }} onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#1F2937' }}>
-            <div className="feature-icon-wrap" style={{ width: 48, height: 48, margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%' }}>
-              <Star color="#fff" size={24} strokeWidth={2} />
+          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center', padding: '2.5rem 1.5rem', borderRadius: 'var(--radius-xl)', transition: 'all 0.3s ease', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#374151'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.3)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#1F2937'; e.currentTarget.style.boxShadow = 'none'; }}>
+            <div className="feature-icon-wrap" style={{ width: 64, height: 64, margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-primary)', borderRadius: '50%' }}>
+              <Star size={28} strokeWidth={2} />
             </div>
-            <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '1rem', color: '#fff' }}>Premium Quality</h4>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Finest materials guaranteed.</p>
+            <h4 style={{ marginBottom: '0.5rem', fontSize: '1.125rem', fontWeight: 600, color: '#fff' }}>Premium Quality</h4>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9375rem', lineHeight: 1.5, margin: 0 }}>Finest materials guaranteed.</p>
           </div>
           
-          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center', padding: '1.5rem 1rem', borderRadius: 'var(--radius-lg)', transition: 'all 0.3s ease', cursor: 'pointer' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#374151' }} onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#1F2937' }}>
-            <div className="feature-icon-wrap" style={{ width: 48, height: 48, margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%' }}>
-              <Gift color="#fff" size={24} strokeWidth={2} />
+          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center', padding: '2.5rem 1.5rem', borderRadius: 'var(--radius-xl)', transition: 'all 0.3s ease', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#374151'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.3)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#1F2937'; e.currentTarget.style.boxShadow = 'none'; }}>
+            <div className="feature-icon-wrap" style={{ width: 64, height: 64, margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-primary)', borderRadius: '50%' }}>
+              <Gift size={28} strokeWidth={2} />
             </div>
-            <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '1rem', color: '#fff' }}>Personalized Gifts</h4>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Crafted just for you.</p>
+            <h4 style={{ marginBottom: '0.5rem', fontSize: '1.125rem', fontWeight: 600, color: '#fff' }}>Personalized Gifts</h4>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9375rem', lineHeight: 1.5, margin: 0 }}>Crafted just for you.</p>
           </div>
           
-          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center', padding: '1.5rem 1rem', borderRadius: 'var(--radius-lg)', transition: 'all 0.3s ease', cursor: 'pointer' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#374151' }} onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#1F2937' }}>
-            <div className="feature-icon-wrap" style={{ width: 48, height: 48, margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%' }}>
-              <ShieldCheck color="#fff" size={24} strokeWidth={2} />
+          <div style={{ background: '#1F2937', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', textAlign: 'center', padding: '2.5rem 1.5rem', borderRadius: 'var(--radius-xl)', transition: 'all 0.3s ease', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.background = '#374151'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.3)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#1F2937'; e.currentTarget.style.boxShadow = 'none'; }}>
+            <div className="feature-icon-wrap" style={{ width: 64, height: 64, margin: '0 auto 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-primary)', borderRadius: '50%' }}>
+              <ShieldCheck size={28} strokeWidth={2} />
             </div>
-            <h4 className="h4" style={{ marginBottom: '0.25rem', fontSize: '1rem', color: '#fff' }}>Secure Payment</h4>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>100% safe transactions.</p>
+            <h4 style={{ marginBottom: '0.5rem', fontSize: '1.125rem', fontWeight: 600, color: '#fff' }}>Secure Payment</h4>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9375rem', lineHeight: 1.5, margin: 0 }}>100% safe transactions.</p>
           </div>
         </div>
       </section>

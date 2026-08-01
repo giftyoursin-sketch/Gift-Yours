@@ -10,8 +10,16 @@ export default function Checkout() {
   const { cartItems, subtotal, discount, shippingFee, grandTotal, coupon, clearCart } = useCart();
   const navigate = useNavigate();
 
-  const [addresses, setAddresses] = useState([]);
-  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [guestForm, setGuestForm] = useState({
+    full_name: '',
+    phone: '',
+    email: '',
+    address_line1: '',
+    city: '',
+    state: '',
+    pincode: ''
+  });
+  
   const [paymentMethod, setPaymentMethod] = useState('upi'); // upi, cod, bank
   const [deliveryNotes, setDeliveryNotes] = useState('');
   
@@ -19,46 +27,69 @@ export default function Checkout() {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch addresses on mount if logged in
+  // Pre-fill form if user is logged in
   useEffect(() => {
     if (user) {
-      const fetchAddresses = async () => {
+      const fetchProfile = async () => {
+        // Just fetch addresses and pre-fill the first one if available
         const { data, error } = await supabase.from('addresses').select('*').eq('customer_id', user.id);
         if (data && data.length > 0) {
-          setAddresses(data);
           const def = data.find(a => a.is_default) || data[0];
-          setSelectedAddress(def.id);
+          setGuestForm({
+            full_name: def.full_name || '',
+            phone: def.phone || '',
+            email: user.email || '',
+            address_line1: def.address_line1 || '',
+            city: def.city || '',
+            state: def.state || '',
+            pincode: def.pincode || ''
+          });
         }
       };
-      fetchAddresses();
+      fetchProfile();
     }
   }, [user]);
 
   if (authLoading) return <div className="container section flex-center" style={{ minHeight: '60vh' }}><div className="skeleton" style={{ width: 48, height: 48, borderRadius: '50%' }}></div></div>;
-  if (!user) return <Navigate to="/login?returnTo=/checkout" replace />;
   if (cartItems.length === 0 && !orderSuccess) return <Navigate to="/cart" replace />;
 
   const formatPrice = (price) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setGuestForm(prev => ({ ...prev, [name]: value }));
+  };
+
   const placeOrder = async () => {
-    if (!selectedAddress) {
-      setError('Please select or add a shipping address');
+    // Validation
+    const { full_name, phone, address_line1, city, state, pincode } = guestForm;
+    if (!full_name || !phone || !address_line1 || !city || !state || !pincode) {
+      setError('Please fill in all required address fields.');
       return;
     }
     setError('');
     setIsSubmitting(true);
 
     try {
-      const address = addresses.find(a => a.id === selectedAddress);
       const orderId = `ORD-${Date.now()}`;
+      
+      const shipping_address = {
+        full_name,
+        phone,
+        email: guestForm.email,
+        address_line1,
+        city,
+        state,
+        pincode
+      };
       
       // 1. Create E-Commerce Order
       const orderData = {
         id: orderId,
-        customer_id: user.id,
+        customer_id: user?.id || null, // Guest checkout support
         status: 'pending',
         payment_method: paymentMethod,
-        shipping_address: address,
+        shipping_address: shipping_address,
         items: cartItems,
         subtotal,
         discount,
@@ -75,9 +106,9 @@ export default function Checkout() {
       const invoiceData = {
         id: `INV-${Date.now()}`,
         invoice_number: `INV-${Date.now().toString().slice(-6)}`,
-        customer_name: address.full_name,
-        customer_phone: address.phone,
-        customer_address: `${address.address_line1}, ${address.city}`,
+        customer_name: full_name,
+        customer_phone: phone,
+        customer_address: `${address_line1}, ${city}`,
         date: new Date().toISOString().split('T')[0],
         items: cartItems.map(item => ({
           productId: item.id,
@@ -107,12 +138,37 @@ export default function Checkout() {
         }
       }
 
-      // 4. WhatsApp Redirection
+      // 4. WhatsApp Redirection (Exact template)
       const productNames = cartItems.map(item => item.name).join(', ');
       const totalQuantity = cartItems.reduce((acc, item) => acc + item.qty, 0);
-      const addressLine = `${address.address_line1}, ${address.city}, ${address.state} - ${address.postal_code}`;
+      const addressLine = `${address_line1}, ${city}, ${state} - ${pincode}`;
       
-      const whatsappMsg = `Hi Gift Yours 👋\n\nI'd like to place an order.\n\nOrder ID: ${orderId}\nProduct: ${productNames}\nQuantity: ${totalQuantity}\nPrice: ₹${grandTotal}\n\nCustomer Name: ${address.full_name}\nPhone: ${address.phone}\nAddress: ${addressLine}\n\nPlease confirm my order.`;
+      const whatsappMsg = `Hi Gift Yours 👋
+
+I'd like to place an order.
+
+Order ID:
+${orderId}
+
+Product:
+${productNames}
+
+Quantity:
+${totalQuantity}
+
+Total:
+₹${grandTotal}
+
+Customer Name:
+${full_name}
+
+Phone:
+${phone}
+
+Address:
+${addressLine}
+
+Please confirm my order.`;
       
       const encodedMsg = encodeURIComponent(whatsappMsg);
       const whatsappUrl = `https://wa.me/919363911273?text=${encodedMsg}`;
@@ -138,8 +194,8 @@ export default function Checkout() {
           Thank you for your order! It has been received and our team will contact you shortly.
         </p>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button className="btn btn-primary" onClick={() => navigate('/orders')}>View My Orders</button>
-          <button className="btn btn-outline" onClick={() => navigate('/products')}>Continue Shopping</button>
+          {user && <button className="btn btn-primary" onClick={() => navigate('/orders')}>View My Orders</button>}
+          <button className={user ? "btn btn-outline" : "btn btn-primary"} onClick={() => navigate('/products')}>Continue Shopping</button>
         </div>
       </div>
     );
@@ -164,30 +220,46 @@ export default function Checkout() {
           <section style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
             <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <MapPin color="var(--color-primary)" />
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Shipping Address</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Customer & Delivery Details</h3>
             </div>
-            <div style={{ padding: '1.5rem' }}>
-              {addresses.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {addresses.map(addr => (
-                    <label key={addr.id} style={{ display: 'flex', gap: '1rem', padding: '1rem', border: selectedAddress === addr.id ? '2px solid var(--color-primary)' : '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', background: selectedAddress === addr.id ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
-                      <input type="radio" name="address" checked={selectedAddress === addr.id} onChange={() => setSelectedAddress(addr.id)} style={{ marginTop: '0.25rem' }} />
-                      <div>
-                        <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{addr.full_name} <span style={{ color: 'var(--color-text-muted)', fontWeight: 400, marginLeft: '0.5rem' }}>{addr.phone}</span></div>
-                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem', lineHeight: 1.5 }}>
-                          {addr.address_line1}, {addr.address_line2 && `${addr.address_line2}, `}{addr.city}, {addr.state} - {addr.pincode}
-                        </div>
-                      </div>
-                    </label>
-                  ))}
-                  <button className="btn btn-outline" style={{ marginTop: '0.5rem' }} onClick={() => navigate('/profile?action=add-address&returnTo=/checkout')}>+ Add New Address</button>
+            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Full Name *</label>
+                  <input type="text" className="input" name="full_name" value={guestForm.full_name} onChange={handleInputChange} placeholder="John Doe" />
                 </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                  <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>You don't have any saved addresses.</p>
-                  <button className="btn btn-primary" onClick={() => navigate('/profile?action=add-address&returnTo=/checkout')}>Add Delivery Address</button>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Mobile Number *</label>
+                  <input type="tel" className="input" name="phone" value={guestForm.phone} onChange={handleInputChange} placeholder="+91" />
                 </div>
-              )}
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Email (Optional)</label>
+                <input type="email" className="input" name="email" value={guestForm.email} onChange={handleInputChange} placeholder="john@example.com" />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Delivery Address *</label>
+                <input type="text" className="input" name="address_line1" value={guestForm.address_line1} onChange={handleInputChange} placeholder="Flat, House no., Building, Company, Apartment" />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Town/City *</label>
+                  <input type="text" className="input" name="city" value={guestForm.city} onChange={handleInputChange} />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">State *</label>
+                  <input type="text" className="input" name="state" value={guestForm.state} onChange={handleInputChange} />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Pincode *</label>
+                  <input type="text" className="input" name="pincode" value={guestForm.pincode} onChange={handleInputChange} />
+                </div>
+              </div>
+
             </div>
           </section>
 
@@ -226,7 +298,7 @@ export default function Checkout() {
           <section style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
             <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Truck color="var(--color-primary)" />
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Delivery Notes</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Order Notes</h3>
             </div>
             <div style={{ padding: '1.5rem' }}>
               <textarea 
@@ -289,9 +361,9 @@ export default function Checkout() {
             className="btn btn-primary" 
             style={{ width: '100%', padding: '1rem' }} 
             onClick={placeOrder}
-            disabled={isSubmitting || !selectedAddress}
+            disabled={isSubmitting}
           >
-            {isSubmitting ? 'Processing...' : `Pay ${formatPrice(grandTotal)}`}
+            {isSubmitting ? 'Processing...' : `Place Order (₹${grandTotal})`}
           </button>
           
           <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8125rem', marginTop: '1rem' }}>
