@@ -98,6 +98,26 @@ export default function Checkout() {
       const { error: invoiceError } = await supabase.from('invoices').insert([invoiceData]);
       if (invoiceError) console.error("Failed to sync invoice:", invoiceError); // Non-blocking
 
+      // 3. Reduce Inventory
+      for (const item of cartItems) {
+        const { data: prodData } = await supabase.from('products').select('stock').eq('id', item.id).single();
+        if (prodData) {
+          const newStock = Math.max(0, (prodData.stock || 0) - item.qty);
+          await supabase.from('products').update({ stock: newStock }).eq('id', item.id);
+        }
+      }
+
+      // 4. WhatsApp Redirection
+      const productNames = cartItems.map(item => item.name).join(', ');
+      const totalQuantity = cartItems.reduce((acc, item) => acc + item.qty, 0);
+      const addressLine = `${address.address_line1}, ${address.city}, ${address.state} - ${address.postal_code}`;
+      
+      const whatsappMsg = `Hi Gift Yours 👋\n\nI'd like to place an order.\n\nOrder ID: ${orderId}\nProduct: ${productNames}\nQuantity: ${totalQuantity}\nPrice: ₹${grandTotal}\n\nCustomer Name: ${address.full_name}\nPhone: ${address.phone}\nAddress: ${addressLine}\n\nPlease confirm my order.`;
+      
+      const encodedMsg = encodeURIComponent(whatsappMsg);
+      const whatsappUrl = `https://wa.me/919363911273?text=${encodedMsg}`;
+      window.open(whatsappUrl, '_blank');
+
       // Success
       clearCart();
       setOrderSuccess(true);
@@ -115,7 +135,7 @@ export default function Checkout() {
         <CheckCircle2 size={80} color="var(--color-success)" style={{ marginBottom: '1.5rem' }} />
         <h1 className="h1" style={{ marginBottom: '1rem' }}>Order Confirmed!</h1>
         <p style={{ color: 'var(--color-text-muted)', marginBottom: '2.5rem', textAlign: 'center', maxWidth: '400px' }}>
-          Thank you for shopping with us. Your order has been placed successfully. You will receive an update shortly.
+          Thank you for your order! It has been received and our team will contact you shortly.
         </p>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn btn-primary" onClick={() => navigate('/orders')}>View My Orders</button>

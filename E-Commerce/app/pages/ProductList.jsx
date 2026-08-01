@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useEcom } from '../EcomContext';
 import ProductCard from '@shared/components/ProductCard';
@@ -23,6 +23,15 @@ export default function ProductList() {
   const [inStockOnly, setInStockOnly] = useState(false);
 
   // Filter products based on category slug OR search query
+  useEffect(() => {
+    if (slug) {
+      window.__CURRENT_CATEGORY__ = pageTitle;
+    }
+    return () => {
+      delete window.__CURRENT_CATEGORY__;
+    };
+  }, [slug, pageTitle]);
+
   const filteredProducts = useMemo(() => {
     let result = [...products];
 

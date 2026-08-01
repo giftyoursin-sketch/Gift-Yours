@@ -9,6 +9,8 @@ import BottomNav from './BottomNav';
 // Includes the Header, Footer, and scroll-to-top behavior.
 // ──────────────────────────────────────────────────────────────────────────────
 
+import WhatsAppWidget from './WhatsAppWidget';
+
 export default function EcomLayout() {
   const { pathname } = useLocation();
 
@@ -27,6 +29,7 @@ export default function EcomLayout() {
       
       <Footer />
       <BottomNav />
+      <WhatsAppWidget />
     </div>
   );
 }
