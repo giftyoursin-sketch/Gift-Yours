@@ -169,7 +169,8 @@
 
   /* Mobile Carousel Horizontal Scroll */
   .mobile-carousel {
-    display: flex;
+    display: flex !important;
+    flex-wrap: nowrap !important;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     gap: 0.75rem;
@@ -183,8 +184,256 @@
     scroll-snap-align: start;
     flex-shrink: 0;
   }
+
+  /* Mobile 3-Card Carousel (Shop by Category) */
+  .mobile-3-cards > * {
+    width: calc(33.333% - 0.5rem) !important;
+    padding: 0.75rem !important;
+  }
+  .mobile-3-cards h3 { font-size: 0.85rem !important; margin-bottom: 0.25rem !important; }
+  .mobile-3-cards .explore-text { font-size: 0.7rem !important; }
+  .mobile-3-cards .arrow-icon { display: none !important; }
+  .mobile-3-cards .count-badge { font-size: 0.55rem !important; padding: 0.15rem 0.35rem !important; }
+
+  /* Mobile Occasion Marquee (Also 3 cards) */
+  .marquee-item {
+    min-width: calc(33vw - 0.5rem) !important;
+    height: 160px !important;
+  }
+  .marquee-item h3 { font-size: 0.85rem !important; margin-bottom: 0.25rem !important; }
+  .marquee-item .explore-text { font-size: 0.7rem !important; }
+
+  /* Why Gift Yours Fix */
+  .features-container.mobile-carousel > * {
+    width: 55vw !important;
+  }
+  .feature-item {
+    padding: 1.5rem 1rem !important;
+  }
+
+  /* Customer Reviews Fix */
+.section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Grids */
+.grid-cols-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+.grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.grid-cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+
+/* E-Commerce Buttons */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  background: transparent;
+  transition: var(--transition);
+}
+.btn-icon:hover {
+  background: var(--surface-border);
+}
+.btn-success {
+  background: var(--success);
+  color: #fff;
+}
+.btn-outline {
+  border: 1px solid var(--surface-border);
+  background: transparent;
+  color: var(--text-primary);
+}
+.btn-outline:hover {
+  background: var(--surface-border);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+}
+.btn-ghost:hover {
+  background: var(--surface-border);
+}
+
+/* Forms */
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  transition: var(--transition);
+  font-size: 0.9375rem;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-alpha-10);
+}
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-muted);
+}
+.input.has-icon {
+  padding-left: 2.75rem;
+}
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+/* Miscellaneous */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-accent {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-border) 25%, var(--surface-2) 50%, var(--surface-border) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite linear;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Utilities for Responsive Display */
+.mobile-only {
+  display: none !important;
+}
+.desktop-only {
+  display: flex !important; /* Most headers/navs use flex */
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .grid-cols-4 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  /* Show/Hide Utilities */
+  .mobile-only { display: flex !important; }
+  .desktop-only { display: none !important; }
+
+  /* Compact Typography */
+  .h1 { font-size: 1.5rem; }
+  .h2 { font-size: 1.25rem; }
+  .h3 { font-size: 1.125rem; }
+  .subtitle { font-size: 0.875rem; }
+
+  /* Compact Spacing */
+  .section { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .container { padding-left: 1rem; padding-right: 1rem; }
+
+  /* Grid Reductions */
+  .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .grid-cols-2 { gap: 0.75rem; }
+
+  /* Buttons */
+  .btn { padding: 0.5rem 1rem; font-size: 0.875rem; }
+  .input { padding: 0.625rem 0.875rem; font-size: 0.875rem; }
+
+  /* Mobile Carousel Horizontal Scroll */
+  .mobile-carousel {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none; /* Firefox */
+  }
+  .mobile-carousel::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  .mobile-carousel > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  /* Mobile 3-Card Carousel (Shop by Category) */
+  .mobile-3-cards > * {
+    width: calc(33.333% - 0.5rem) !important;
+    padding: 0.75rem !important;
+  }
+  .mobile-3-cards h3 { font-size: 0.85rem !important; margin-bottom: 0.25rem !important; }
+  .mobile-3-cards .explore-text { font-size: 0.7rem !important; }
+  .mobile-3-cards .arrow-icon { display: none !important; }
+  .mobile-3-cards .count-badge { font-size: 0.55rem !important; padding: 0.15rem 0.35rem !important; }
+
+  /* Mobile Occasion Marquee (Also 3 cards) */
+  .marquee-item {
+    min-width: calc(33vw - 0.5rem) !important;
+    height: 160px !important;
+  }
+  .marquee-item h3 { font-size: 0.85rem !important; margin-bottom: 0.25rem !important; }
+  .marquee-item .explore-text { font-size: 0.7rem !important; }
+
+  /* Why Gift Yours Fix */
+  .features-container.mobile-carousel > * {
+    width: 55vw !important;
+  }
+  .feature-item {
+    padding: 1.5rem 1rem !important;
+  }
+
+  /* Customer Reviews Fix */
+  .reviews-carousel > * {
+    width: 85vw !important;
+    padding: 1.5rem !important;
+  }
+
+  /* Instagram Card Fix */
+  .insta-card {
+    height: 400px !important;
+  }
+  
+  .insta-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 480px) {
-  /* No changes needed here if we enforce 2-cols for products */
+  .hero-trust-badges { justify-content: flex-start; }
+  .features-section { padding: 3rem 0; }
+}
+
+/* Global Insta Grid */
+.insta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+/* Global Insta Card */
+.insta-card {
+  height: 480px;
 }

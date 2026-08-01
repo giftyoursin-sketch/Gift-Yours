@@ -34,9 +34,9 @@ export default function ProductCard({ product }) {
         backgroundColor: 'var(--color-bg)',
         border: '1px solid var(--color-border)',
         overflow: 'hidden',
-        transition: 'var(--transition-normal)',
-        boxShadow: isHovered ? 'var(--shadow-lg)' : 'var(--shadow-sm)',
-        transform: isHovered ? 'translateY(-4px)' : 'none',
+        transition: 'all var(--transition-normal)',
+        boxShadow: isHovered ? 'var(--shadow-premium)' : 'var(--shadow-sm)',
+        transform: isHovered ? 'translateY(-6px)' : 'none',
         position: 'relative',
         height: '100%'
       }}
@@ -45,6 +45,11 @@ export default function ProductCard({ product }) {
     >
       {/* Badges */}
       <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {product.isBestSeller && (
+          <span className="badge" style={{ backgroundColor: '#F59E0B', color: '#fff', fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            🔥 Best Seller
+          </span>
+        )}
         {hasDiscount && (
           <span className="badge badge-accent" style={{ fontSize: '0.65rem' }}>-{discountPercent}%</span>
         )}
@@ -89,7 +94,7 @@ export default function ProductCard({ product }) {
           style={{
             position: 'absolute',
             top: 0, left: 0, width: '100%', height: '100%',
-            objectFit: 'contain', padding: '1rem',
+            objectFit: 'contain', padding: 'var(--card-img-padding, 1rem)',
             transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
             transform: isHovered ? 'scale(1.05)' : 'scale(1)'
           }}
@@ -107,6 +112,17 @@ export default function ProductCard({ product }) {
             </span>
           </div>
         )}
+        
+        {/* Quick View Button on Hover */}
+        <div style={{
+          position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)',
+          opacity: isHovered ? 1 : 0, transition: 'opacity 0.3s ease', zIndex: 10,
+          width: '90%'
+        }}>
+          <button className="btn btn-ghost" style={{ width: '100%', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', color: 'var(--color-dark)', borderRadius: 'var(--radius-full)', padding: '0.5rem', fontSize: '0.8125rem', boxShadow: 'var(--shadow-md)' }}>
+            Quick View
+          </button>
+        </div>
       </Link>
 
       {/* Content */}
@@ -145,9 +161,9 @@ export default function ProductCard({ product }) {
           </div>
           
           <button 
-            className="btn btn-primary btn-icon mobile-compact-btn" 
+            className="btn btn-primary btn-icon mobile-compact-btn ripple" 
             disabled={isOutOfStock}
-            style={{ width: '36px', height: '36px', padding: 0 }}
+            style={{ width: '40px', height: '40px', padding: 0, borderRadius: '50%' }}
             title="Add to Cart"
           >
             <ShoppingBag size={18} />
@@ -182,6 +198,9 @@ export default function ProductCard({ product }) {
           .mobile-compact-btn svg {
             width: 14px !important;
             height: 14px !important;
+          }
+          :root {
+            --card-img-padding: 0.5rem;
           }
         }
       `}</style>

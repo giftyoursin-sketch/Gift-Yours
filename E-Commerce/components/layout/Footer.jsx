@@ -16,9 +16,11 @@ export default function Footer() {
       borderTop: '1px solid var(--surface-border)',
       paddingTop: '3rem',
       paddingBottom: '1rem',
-      marginTop: '4rem'
+      marginTop: '4rem',
+      position: 'relative',
+      overflow: 'hidden'
     }} className="footer-wrapper">
-      <div className="container">
+      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
         <div className="grid-cols-4 footer-grid" style={{ marginBottom: '3rem' }}>
           {/* Brand Info */}
           <div>

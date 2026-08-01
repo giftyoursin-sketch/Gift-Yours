@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from 'react';
+import '../styles/index.css';
 import './ecom.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';

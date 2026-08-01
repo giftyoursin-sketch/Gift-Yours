@@ -13,6 +13,10 @@
   --color-bg: #FFFFFF;
   --color-bg-alt: #F9FAFB;
   --color-bg-elevated: #FFFFFF;
+  --color-cream: #FAF8F5;
+  --color-lavender: #F8F9FF;
+  --color-warm-gray: #F3F4F6;
+  --color-light-beige: #F5F5F0;
   
   --color-text-main: #111827;
   --color-text-muted: #6B7280;
@@ -32,6 +36,7 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.025);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.01);
   --shadow-glow: 0 0 15px rgba(239, 68, 68, 0.2);
+  --shadow-premium: 0 10px 40px -10px rgba(0,0,0,0.08);
 
   /* Border Radii */
   --radius-sm: 6px;
@@ -315,9 +320,190 @@ img {
   .section { padding: var(--space-xl) 0; }
   .grid-cols-4 { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
   .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
-  .grid-cols-2 { grid-template-columns: 1fr; }
+  .grid-cols-2 { grid-template-columns: 1fr; gap: var(--space-sm); }
 }
 
 @media (max-width: 480px) {
-  .grid-cols-4, .grid-cols-3 { grid-template-columns: 1fr; }
+  .section { padding: var(--space-lg) 0; }
+  /* Enforce 2-column grid for products on mobile, avoid oversized cards */
+  .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+  .grid-cols-2 { grid-template-columns: 1fr; gap: 0.5rem; }
+}
+
+/* Micro Animations & Premium FX */
+.animate-fade-in-up { 
+  opacity: 0;
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+.hover-zoom-img { overflow: hidden; }
+.hover-zoom-img img { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+.hover-zoom-img:hover img { transform: scale(1.08); }
+
+.hover-slide-arrow .arrow-icon { transition: transform var(--transition-normal); }
+.hover-slide-arrow:hover .arrow-icon { transform: translateX(6px); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Auto-scrolling Marquee */
+.marquee-container {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.marquee-container:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Glassmorphism */
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: var(--shadow-premium);
+}
+
+.glass-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 80%);
+}
+
+/* Premium Motion Design Animations */
+.anim-white-gift {
+  will-change: transform;
+  animation: whiteGiftFloat 4s ease-in-out infinite;
+  transition: transform 0.3s ease-out;
+}
+.anim-white-gift:hover {
+  transform: translate3d(0, -10px, 0) scale(1.05) rotate(2deg) !important;
+  animation-play-state: paused;
+}
+
+.anim-red-gift {
+  will-change: transform;
+  animation: redGiftFloat 4.5s ease-in-out infinite;
+  transition: transform 0.3s ease-out;
+}
+.anim-red-gift:hover {
+  transform: translate3d(0, -10px, 0) scale(1.05) rotate(-2deg) !important;
+  animation-play-state: paused;
+}
+
+.anim-real-heart {
+  will-change: transform, filter;
+  animation: realHeartBeat 2.5s ease-in-out infinite;
+  transition: transform 0.3s ease-out;
+}
+.anim-real-heart:hover {
+  transform: scale(1.2) !important;
+  animation-play-state: paused;
+}
+
+.anim-heart-balloon {
+  will-change: transform;
+  animation: balloonPremiumFloat 5s ease-in-out infinite;
+  transition: transform 0.3s ease-out;
+}
+.anim-heart-balloon:hover {
+  transform: translate3d(0, -25px, 0) !important;
+  animation-play-state: paused;
+}
+
+.anim-sparkles-premium {
+  will-change: transform, opacity;
+  animation: sparklesFloat 1.5s infinite;
+}
+
+/* Keyframes */
+@keyframes whiteGiftFloat {
+  0% { transform: translate3d(0, 0, 0) rotate(-5deg) scale(1); }
+  50% { transform: translate3d(0, -18px, 0) rotate(5deg) scale(1.04); }
+  100% { transform: translate3d(0, 0, 0) rotate(-5deg) scale(1); }
+}
+
+@keyframes redGiftFloat {
+  0% { transform: translate3d(0, 0, 0) rotate(4deg) scale(1); }
+  50% { transform: translate3d(0, -16px, 0) rotate(-4deg) scale(1.06); }
+  100% { transform: translate3d(0, 0, 0) rotate(4deg) scale(1); }
+}
+
+@keyframes realHeartBeat {
+  0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4)); }
+  10% { transform: scale(1.15); filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6)); }
+  20% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4)); }
+  30% { transform: scale(1.22); filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.7)); }
+  40% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4)); }
+}
+
+@keyframes balloonPremiumFloat {
+  0% { transform: translate3d(-8px, 0px, 0) rotate(-4deg); }
+  50% { transform: translate3d(10px, -28px, 0) rotate(4deg); }
+  100% { transform: translate3d(-8px, 0px, 0) rotate(-4deg); }
+}
+
+@keyframes sparklesFloat {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+/* Button Enhancements */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  transition: transform 0.6s ease-out;
+}
+.btn-ripple:active::after {
+  transform: translate(-50%, -50%) scale(1);
+  transition: 0s;
+}
+
+.btn-arrow-slide svg {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-arrow-slide:hover svg {
+  transform: translate3d(4px, 0, 0);
+}
+
+.btn-hover-lift {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.btn-hover-lift:hover {
+  transform: translate3d(0, -3px, 0);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile Visibility Controls */
+@media (max-width: 768px) {
+  .mobile-hidden-deco {
+    display: none !important;
+  }
 }
