@@ -129,7 +129,7 @@ export default function ProductDetails() {
               src={images[activeImage]} 
               alt={product.name}
               onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
-              style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '1rem' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
             {hasDiscount && (
               <span className="badge badge-accent" style={{ position: 'absolute', top: '1rem', left: '1rem' }}>Sale</span>
@@ -153,7 +153,7 @@ export default function ProductDetails() {
                     src={img} 
                     alt={`Thumbnail ${idx}`} 
                     onError={(e) => { e.target.closest('button').style.display = 'none'; }}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '0.25rem' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
               </button>
