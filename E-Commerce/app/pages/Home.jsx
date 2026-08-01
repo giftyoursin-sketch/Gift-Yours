@@ -144,27 +144,27 @@ export default function Home() {
           onClick={prevSlide}
           className="btn-icon"
           style={{ 
-            position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-            background: 'rgba(255,255,255,0.8)', color: '#111', width: '40px', height: '40px',
+            position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+            background: 'rgba(255,255,255,0.7)', color: '#111', width: '28px', height: '28px',
             display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
-            cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
           }}
           aria-label="Previous Slide"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={16} />
         </button>
         <button 
           onClick={nextSlide}
           className="btn-icon"
           style={{ 
-            position: 'absolute', right: '1.5rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-            background: 'rgba(255,255,255,0.8)', color: '#111', width: '40px', height: '40px',
+            position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+            background: 'rgba(255,255,255,0.7)', color: '#111', width: '28px', height: '28px',
             display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
-            cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
           }}
           aria-label="Next Slide"
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={16} />
         </button>
 
         {/* Indicators */}
@@ -344,7 +344,7 @@ export default function Home() {
       </section>
 
       {/* ─── BEST SELLERS ─── */}
-      <section className="section container" style={{ backgroundColor: 'var(--color-lavender)', borderRadius: 'var(--radius-xl)', padding: '4rem 2rem', position: 'relative' }}>
+      <section className="section container best-sellers-section" style={{ backgroundColor: 'var(--color-lavender)', borderRadius: 'var(--radius-xl)', position: 'relative' }}>
         <div className="anim-heart-balloon mobile-hidden-deco" style={{ position: 'absolute', top: '-40px', right: '5%', width: '110px', opacity: 0.6, zIndex: 1 }}>
           <img src="/Heart Ballon .png" alt="Heart Balloon" loading="lazy" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
         </div>
@@ -373,7 +373,7 @@ export default function Home() {
 
       {/* ─── WHY GIFT YOURS (3D ICONS) ─── */}
       <section className="features-section" style={{ backgroundColor: 'var(--color-dark)', padding: '5rem 0' }}>
-        <div className="container" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+        <div className="container features-header-container" style={{ textAlign: 'center' }}>
           <h2 className="h2" style={{ color: '#fff' }}>Why Gift Yours</h2>
           <p className="subtitle" style={{ color: 'rgba(255,255,255,0.7)' }}>The premium gifting experience you deserve.</p>
         </div>

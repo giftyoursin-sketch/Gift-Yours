@@ -352,6 +352,12 @@
   /* Compact Spacing */
   .section { padding-top: 1.5rem; padding-bottom: 1.5rem; }
   .container { padding-left: 1rem; padding-right: 1rem; }
+  
+  /* Top Banner Height */
+  .top-banner-slider {
+    height: 20vh !important;
+    min-height: 120px !important;
+  }
 
   /* Grid Reductions */
   .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
@@ -416,14 +422,33 @@
     height: 400px !important;
   }
   
+  /* Best Sellers Fix */
+  .best-sellers-section {
+    padding: 2.5rem 0.75rem !important;
+  }
+
   .insta-grid {
     grid-template-columns: 1fr !important;
+  }
+  /* Features Header */
+  .features-header-container {
+    margin-bottom: 1.5rem !important;
   }
 }
 
 @media (max-width: 480px) {
   .hero-trust-badges { justify-content: flex-start; }
   .features-section { padding: 3rem 0; }
+}
+
+/* Features Header Desktop */
+.features-header-container {
+  margin-bottom: 3.5rem;
+}
+
+/* Best Sellers Desktop */
+.best-sellers-section {
+  padding: 4rem 2rem;
 }
 
 /* Global Insta Grid */

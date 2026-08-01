@@ -82,7 +82,7 @@ export default function ProductCard({ product }) {
         to={`/product/${product.id}`} 
         style={{ 
           position: 'relative', 
-          paddingTop: '100%', /* 1:1 Aspect Ratio */
+          aspectRatio: '4/5', /* 4:5 Aspect Ratio */
           backgroundColor: 'var(--color-bg-alt)',
           overflow: 'hidden'
         }}
@@ -94,7 +94,7 @@ export default function ProductCard({ product }) {
           style={{
             position: 'absolute',
             top: 0, left: 0, width: '100%', height: '100%',
-            objectFit: 'contain', padding: 'var(--card-img-padding, 1rem)',
+            objectFit: 'cover',
             transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
             transform: isHovered ? 'scale(1.05)' : 'scale(1)'
           }}
@@ -148,7 +148,7 @@ export default function ProductCard({ product }) {
           </h3>
         </Link>
 
-        <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="price-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span className="product-price" style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>
               {formatPrice(product.price)}
@@ -172,7 +172,7 @@ export default function ProductCard({ product }) {
       </div>
       <style>{`
         .product-card-body {
-          padding: 1.25rem;
+          padding: 0.75rem 1.25rem 1.25rem 1.25rem;
         }
         .product-title {
           font-size: 1.0625rem;
@@ -180,9 +180,13 @@ export default function ProductCard({ product }) {
         .product-price {
           font-size: 1.125rem;
         }
+        .price-container {
+          margin-top: auto;
+          padding-top: 1rem;
+        }
         @media (max-width: 768px) {
           .product-card-body {
-            padding: 0.75rem !important;
+            padding: 0.5rem 0.75rem 0.75rem 0.75rem !important;
           }
           .product-title {
             font-size: 0.875rem !important;
@@ -191,6 +195,10 @@ export default function ProductCard({ product }) {
           .product-price {
             font-size: 0.9375rem !important;
           }
+          .price-container {
+            margin-top: 0.25rem !important;
+            padding-top: 0.25rem !important;
+          }
           .mobile-compact-btn {
             width: 28px !important;
             height: 28px !important;
@@ -198,9 +206,6 @@ export default function ProductCard({ product }) {
           .mobile-compact-btn svg {
             width: 14px !important;
             height: 14px !important;
-          }
-          :root {
-            --card-img-padding: 0.5rem;
           }
         }
       `}</style>
