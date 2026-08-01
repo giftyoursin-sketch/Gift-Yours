@@ -227,6 +227,7 @@
 .grid-cols-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
 .grid-cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+.grid-cols-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; }
 
 /* E-Commerce Buttons */
 .btn-icon {
@@ -335,7 +336,7 @@
 
 /* Responsive Overrides */
 @media (max-width: 1024px) {
-  .grid-cols-4 { grid-template-columns: repeat(3, 1fr); }
+  .grid-cols-5, .grid-cols-4 { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -360,7 +361,7 @@
   }
 
   /* Grid Reductions */
-  .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .grid-cols-5, .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
   .grid-cols-2 { gap: 0.75rem; }
 
   /* Buttons */
@@ -444,6 +445,13 @@
 /* Features Header Desktop */
 .features-header-container {
   margin-bottom: 3.5rem;
+}
+
+/* Hero Desktop Specifics */
+@media (min-width: 769px) {
+  .hero-text-container {
+    margin-top: -4rem; /* Shifts the text container up */
+  }
 }
 
 /* Best Sellers Desktop */

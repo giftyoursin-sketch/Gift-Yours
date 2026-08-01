@@ -310,15 +310,16 @@ img {
 .grid-cols-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
 .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); }
 .grid-cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
+.grid-cols-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-md); }
 
 @media (max-width: 1024px) {
-  .grid-cols-4 { grid-template-columns: repeat(3, 1fr); }
+  .grid-cols-5, .grid-cols-4 { grid-template-columns: repeat(3, 1fr); }
   .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
   .section { padding: var(--space-xl) 0; }
-  .grid-cols-4 { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
+  .grid-cols-5, .grid-cols-4 { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
   .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
   .grid-cols-2 { grid-template-columns: 1fr; gap: var(--space-sm); }
 }
@@ -326,7 +327,7 @@ img {
 @media (max-width: 480px) {
   .section { padding: var(--space-lg) 0; }
   /* Enforce 2-column grid for products on mobile, avoid oversized cards */
-  .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+  .grid-cols-5, .grid-cols-4, .grid-cols-3 { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
   .grid-cols-2 { grid-template-columns: 1fr; gap: 0.5rem; }
 }
 

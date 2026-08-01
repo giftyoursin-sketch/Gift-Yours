@@ -190,7 +190,7 @@ export default function Home() {
       </section>
 
       {/* ─── MAIN HERO TEXT ─── */}
-      <section style={{ backgroundColor: 'var(--color-cream)', padding: '4rem 0', position: 'relative' }}>
+      <section style={{ backgroundColor: 'var(--color-cream)', padding: '1.5rem 0 4rem 0', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 20%, var(--color-primary-light) 0%, transparent 40%), radial-gradient(circle at 20% 80%, #E0E7FF 0%, transparent 40%)', opacity: 0.6 }} />
         
         {/* Premium 3D Floating Icons */}
@@ -212,7 +212,7 @@ export default function Home() {
 
         <div className="container" style={{ position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '4rem', alignItems: 'center' }}>
           
-          <div style={{ animation: 'heroFadeInUp 0.8s ease-out forwards', textAlign: 'left' }}>
+          <div className="hero-text-container" style={{ animation: 'heroFadeInUp 0.8s ease-out forwards', textAlign: 'left' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fff', padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', boxShadow: 'var(--shadow-sm)', marginBottom: '1.5rem', color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
               <Sparkles className="anim-sparkles-premium" size={16} /> Premium Personalized Gifts
             </div>
@@ -494,7 +494,7 @@ export default function Home() {
           </div>
           <h2 className="h2">Follow us on Instagram</h2>
         </div>
-        <div className="insta-grid">
+        <div className="insta-grid-container" style={{ display: 'grid', gap: '1.5rem' }}>
           {[
             {
               id: 'DWiv0_ACdX7',
@@ -511,24 +511,29 @@ export default function Home() {
           ].map((reel, i) => (
             <div 
               key={i} 
-              className="review-carousel-item hover-zoom-img insta-card" 
+              className="hover-zoom-img insta-card-container" 
               style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden', display: 'block', background: '#000', position: 'relative' }}
             >
-              {/* Cropped iframe to hide Instagram Header & Footer and show exact thumbnail */}
               <iframe 
-                src={`${reel.link}embed/?hidecaption=true`}
+                src={`${reel.link}embed/`}
                 style={{ 
                   position: 'absolute', 
-                  top: '-70px', 
-                  left: '-2px', 
-                  width: 'calc(100% + 4px)', 
-                  height: 'calc(100% + 220px)', 
-                  border: 'none', 
-                  pointerEvents: 'none' /* Prevents interacting with iframe directly */
+                  top: 0, 
+                  left: 0, 
+                  width: '100%', 
+                  height: '100%', 
+                  border: 'none',
+                  pointerEvents: 'none'
                 }}
                 scrolling="no"
                 allowTransparency="true"
               ></iframe>
+              
+              {/* Cover top header */}
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '55px', background: '#000', zIndex: 5 }}></div>
+              
+              {/* Cover bottom footer */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '65px', background: '#000', zIndex: 5 }}></div>
               
               {/* Invisible overlay link to intercept clicks and open Instagram */}
               <a 
@@ -576,6 +581,22 @@ export default function Home() {
       </section>
 
       <style>{`
+        .insta-grid-container {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .insta-card-container {
+          height: 480px;
+        }
+
+        @media (max-width: 768px) {
+          .insta-grid-container {
+            grid-template-columns: 1fr;
+          }
+          .insta-card-container {
+            height: 400px;
+          }
+        }
+
         .mobile-only-deco {
           display: none;
         }

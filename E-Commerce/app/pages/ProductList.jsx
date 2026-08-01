@@ -169,7 +169,7 @@ export default function ProductList() {
         {/* Product Grid */}
         <div style={{ flex: 1 }}>
           {filteredProducts.length > 0 ? (
-            <div className={showFilters ? "grid-cols-3" : "grid-cols-4"}>
+            <div className={showFilters ? "grid-cols-4" : "grid-cols-5"}>
               {filteredProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
