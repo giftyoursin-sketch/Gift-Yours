@@ -23,15 +23,6 @@ export default function ProductList() {
   const [inStockOnly, setInStockOnly] = useState(false);
 
   // Filter products based on category slug OR search query
-  useEffect(() => {
-    if (slug) {
-      window.__CURRENT_CATEGORY__ = pageTitle;
-    }
-    return () => {
-      delete window.__CURRENT_CATEGORY__;
-    };
-  }, [slug, pageTitle]);
-
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
@@ -67,6 +58,15 @@ export default function ProductList() {
   // Find the readable category name from the slug
   const currentCategory = categories.find(c => toSlug(c) === slug) || (slug ? 'Category' : 'All Products');
   const pageTitle = searchQuery ? `Search Results for "${searchQuery}"` : currentCategory;
+
+  useEffect(() => {
+    if (slug) {
+      window.__CURRENT_CATEGORY__ = pageTitle;
+    }
+    return () => {
+      delete window.__CURRENT_CATEGORY__;
+    };
+  }, [slug, pageTitle]);
 
   if (loading) {
     return (
