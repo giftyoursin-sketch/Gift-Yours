@@ -109,9 +109,40 @@ export default function Products() {
                 <Package size={22} color="var(--primary)" />
               </div>
 
-              <h3 className="product-title" style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: '0.25rem', paddingRight: '4rem' }}>{p.name}</h3>
-              {p.sku && <div className="product-sku" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>SKU: {p.sku}</div>}
-              {p.category && <div className="product-category" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.875rem' }}>{p.category}</div>}
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
+                <div style={{ flex: 1, paddingRight: '0.5rem' }}>
+                  <h3 className="product-title" style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: '0.25rem' }}>{p.name}</h3>
+                  {p.sku && <div className="product-sku" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>SKU: {p.sku}</div>}
+                  {p.category && <div className="product-category" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{p.category}</div>}
+                </div>
+                
+                {/* Product Image */}
+                <div 
+                  className="product-image-container" 
+                  style={{ 
+                    width: '110px', 
+                    height: '110px', 
+                    borderRadius: '8px', 
+                    overflow: 'hidden', 
+                    background: 'var(--surface-2)',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1px solid var(--border)'
+                  }}
+                >
+                  {p.imageUrl ? (
+                    <img 
+                      src={p.imageUrl} 
+                      alt={p.name} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>NO IMG</span>
+                  )}
+                </div>
+              </div>
 
               <div className="grid-2 product-price-row" style={{ gap: '0.75rem', marginBottom: '0.875rem' }}>
                 <div className="price-box" style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.625rem' }}>

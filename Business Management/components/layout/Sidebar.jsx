@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Layers, FileText,
@@ -86,7 +86,7 @@ function Chevron({ open }) {
 }
 
 // ─── Reusable accordion (expanded sidebar) ────────────────────────────────────
-function NavAccordion({ group, sidebarCollapsed }) {
+const NavAccordion = memo(({ group, sidebarCollapsed }) => {
   const location = useLocation();
 
   const isGroupActive = group.matchPaths.some(p =>
@@ -96,13 +96,6 @@ function NavAccordion({ group, sidebarCollapsed }) {
   );
 
   const [open, setOpen] = useState(group.alwaysOpen ? true : isGroupActive);
-  const contentRef = useRef(null);
-  const [contentH, setContentH] = useState(0);
-
-  // Re-measure whenever content or sidebar state changes
-  useLayoutEffect(() => {
-    if (contentRef.current) setContentH(contentRef.current.scrollHeight);
-  });
 
   // Auto-expand when active route matches this group
   useEffect(() => {
@@ -182,14 +175,14 @@ function NavAccordion({ group, sidebarCollapsed }) {
       {/* Animated submenu */}
       <div
         style={{
-          overflow: 'hidden',
-          maxHeight: open ? `${contentH}px` : '0px',
-          transition: 'max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+          display: 'grid',
+          gridTemplateRows: open ? '1fr' : '0fr',
+          transition: 'grid-template-rows 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         <div
-          ref={contentRef}
           style={{
+            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             gap: '0.1rem',
@@ -237,10 +230,10 @@ function NavAccordion({ group, sidebarCollapsed }) {
 
     </div>
   );
-}
+});
 
 // ─── Main Sidebar ─────────────────────────────────────────────────────────────
-export default function Sidebar({ collapsed, onToggle }) {
+const Sidebar = memo(({ collapsed, onToggle }) => {
   const { settings } = useApp();
   const isDark = settings?.theme === 'dark';
 
@@ -332,4 +325,6 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
     </aside>
   );
-}
+});
+
+export default Sidebar;

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import { Bell, Search, Sun, Moon, Plus, FileText, Package, TrendingDown, LogOut, Settings, User } from 'lucide-react';
 import { useApp } from '../../app/AppContext';
 import { useLocation, Link } from 'react-router-dom';
@@ -15,7 +15,7 @@ const PAGE_TITLES = {
   '/business/settings': 'Settings',
 };
 
-export default function Topbar({ onMenuToggle }) {
+const Topbar = memo(({ onMenuToggle }) => {
   const { settings, saveSetting, notifications } = useApp();
   const location = useLocation();
   const title = PAGE_TITLES[location.pathname] || 'Gift Yours';
@@ -23,9 +23,21 @@ export default function Topbar({ onMenuToggle }) {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   
   const profileRef = useRef(null);
   const actionsRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
+
+  const handleSearch = (e) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      // Fake search action
+      console.log('Searching for:', val);
+    }, 300);
+  };
 
   const toggleTheme = () => saveSetting('theme', settings.theme === 'dark' ? 'light' : 'dark');
 
@@ -69,7 +81,12 @@ export default function Topbar({ onMenuToggle }) {
         {/* Global Search */}
         <div className="search-bar desktop-only" style={{ maxWidth: '400px', marginLeft: '1rem', flex: 1 }}>
           <Search size={16} color="var(--text-muted)" />
-          <input type="text" placeholder="Search invoices, products, or customers..." />
+          <input 
+            type="text" 
+            placeholder="Search invoices, products, or customers..." 
+            value={searchTerm}
+            onChange={handleSearch}
+          />
         </div>
       </div>
 
@@ -168,4 +185,6 @@ export default function Topbar({ onMenuToggle }) {
       </div>
     </header>
   );
-}
+});
+
+export default Topbar;

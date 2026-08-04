@@ -4,7 +4,7 @@ import { Heart, Star, ShoppingBag } from 'lucide-react';
 import { getProductImagePath, FALLBACK_IMAGE } from '../utils/imageUtils';
 import { useWishlist } from '../../E-Commerce/app/WishlistContext';
 
-export default function ProductCard({ product }) {
+const ProductCard = React.memo(({ product }) => {
   const [imgSrc, setImgSrc] = useState(getProductImagePath(product.category, product.name, 'cover.jpg'));
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -91,6 +91,8 @@ export default function ProductCard({ product }) {
           src={imgSrc} 
           alt={product.name}
           onError={handleImageError}
+          loading="lazy"
+          decoding="async"
           style={{
             position: 'absolute',
             top: 0, left: 0, width: '100%', height: '100%',
@@ -211,4 +213,6 @@ export default function ProductCard({ product }) {
       `}</style>
     </div>
   );
-}
+});
+
+export default ProductCard;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useEcom } from '../EcomContext';
 import { useAuth } from '../AuthContext';
@@ -109,14 +109,14 @@ export default function Home() {
     );
   }
 
-  const frame12x8 = products.find(p => p.name.toLowerCase().includes('12x8'));
-  let featuredProducts = [];
-  if (frame12x8) {
-    featuredProducts = [frame12x8, ...products.filter(p => p.id !== frame12x8.id).slice(0, 3)];
-  } else {
-    featuredProducts = products.slice(0, 4);
-  }
-  const newArrivals = products.slice(4, 8);
+  const frame12x8 = useMemo(() => products.find(p => p.name.toLowerCase().includes('12x8')), [products]);
+  const featuredProducts = useMemo(() => {
+    if (frame12x8) {
+      return [frame12x8, ...products.filter(p => p.id !== frame12x8.id).slice(0, 3)];
+    }
+    return products.slice(0, 4);
+  }, [products, frame12x8]);
+  const newArrivals = useMemo(() => products.slice(4, 8), [products]);
 
   return (
     <div>
@@ -247,11 +247,11 @@ export default function Home() {
 
           <div className="desktop-only" style={{ position: 'relative', height: '550px' }}>
             <div className="hover-zoom-img glass-card" style={{ position: 'absolute', top: '20px', right: '0', width: '75%', height: '70%', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
-              <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=1000&auto=format&fit=crop" alt="Gift" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=1000&auto=format&fit=crop" alt="Gift" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             
             <div className="hover-zoom-img glass-card" style={{ position: 'absolute', bottom: '60px', left: '0', width: '55%', height: '55%', borderRadius: 'var(--radius-xl)', overflow: 'hidden', zIndex: 2, border: '6px solid #fff' }}>
-              <img src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?q=80&w=800&auto=format&fit=crop" alt="Frames" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?q=80&w=800&auto=format&fit=crop" alt="Frames" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
           </div>
           
@@ -297,6 +297,8 @@ export default function Home() {
                 <img 
                   src={cat.img} 
                   alt={cat.name} 
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover'
                   }}
@@ -443,7 +445,7 @@ export default function Home() {
                 textDecoration: 'none', overflow: 'hidden',
                 boxShadow: 'var(--shadow-md)', flexShrink: 0
               }}>
-                <img src={occasion.img} alt={occasion.name.replace(' (2)', '')} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={occasion.img} alt={occasion.name.replace(' (2)', '')} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%)' }} />
                 
                 <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '2rem 1.5rem', textAlign: 'center' }}>

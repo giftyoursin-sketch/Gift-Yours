@@ -21,6 +21,7 @@ export default function ProductForm({ product, onClose, onSave }) {
     supplier: product?.supplier || '',
     notes: product?.notes || '',
     status: product?.status || 'active',
+    imageUrl: product?.imageUrl || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -102,6 +103,52 @@ export default function ProductForm({ product, onClose, onSave }) {
               <div className="input-group">
                 <label className="input-label">Supplier</label>
                 <input className="input" value={form.supplier} onChange={e => set('supplier', e.target.value)} placeholder="Supplier name" />
+              </div>
+
+              {/* Image Upload */}
+              <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="input-label">Product Image (500x500 px recommended, max 1MB)</label>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <input 
+                      type="file" 
+                      accept="image/png, image/jpeg, image/webp"
+                      className="input" 
+                      style={{ padding: '0.375rem' }}
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          if (file.size > 1024 * 1024) {
+                            alert('File size must be under 1MB');
+                            e.target.value = '';
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            set('imageUrl', reader.result);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }} 
+                    />
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.375rem' }}>
+                      Selecting a new file will replace the current image. Max size: 1MB.
+                    </div>
+                  </div>
+                  {form.imageUrl && (
+                    <div style={{ width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative', flexShrink: 0 }}>
+                      <img src={form.imageUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button 
+                        type="button"
+                        onClick={() => set('imageUrl', '')}
+                        title="Remove image"
+                        style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Pricing */}
