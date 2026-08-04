@@ -52,6 +52,8 @@ export function EcomProvider({ children }) {
           originalPrice: p.selling_price ? p.selling_price * 1.2 : 0, // Mock original price for discounts
           stock: p.stock || 0,
           status: p.status,
+          imageUrl: p.image_url,
+          extraImages: p.extra_images ? (typeof p.extra_images === 'string' ? JSON.parse(p.extra_images) : p.extra_images) : [],
           rating: (Math.random() * (5.0 - 4.0) + 4.0).toFixed(1), // Mock rating between 4.0 and 5.0
           reviews: Math.floor(Math.random() * 200) + 10, // Mock review count
         }));

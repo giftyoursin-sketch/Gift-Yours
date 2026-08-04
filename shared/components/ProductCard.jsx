@@ -5,7 +5,7 @@ import { getProductImagePath, FALLBACK_IMAGE } from '../utils/imageUtils';
 import { useWishlist } from '../../E-Commerce/app/WishlistContext';
 
 const ProductCard = React.memo(({ product }) => {
-  const [imgSrc, setImgSrc] = useState(getProductImagePath(product.category, product.name, 'cover.jpg'));
+  const [imgSrc, setImgSrc] = useState(product.imageUrl || getProductImagePath(product.category, product.name, 'cover.jpg'));
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, toggleWishlist } = useWishlist();
   const isSaved = isInWishlist(product.id);

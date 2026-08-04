@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useApp } from '@business/app/AppContext';
+import { optimizeImage } from '@shared/utils/imageUtils';
 
 export default function ProductForm({ product, onClose, onSave }) {
   const { settings } = useApp();
@@ -22,6 +23,7 @@ export default function ProductForm({ product, onClose, onSave }) {
     notes: product?.notes || '',
     status: product?.status || 'active',
     imageUrl: product?.imageUrl || '',
+    extraImages: product?.extraImages || [],
   });
   const [saving, setSaving] = useState(false);
 
@@ -107,45 +109,99 @@ export default function ProductForm({ product, onClose, onSave }) {
 
               {/* Image Upload */}
               <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-                <label className="input-label">Product Image (500x500 px recommended, max 1MB)</label>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1 }}>
-                    <input 
-                      type="file" 
-                      accept="image/png, image/jpeg, image/webp"
-                      className="input" 
-                      style={{ padding: '0.375rem' }}
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          if (file.size > 1024 * 1024) {
-                            alert('File size must be under 1MB');
-                            e.target.value = '';
-                            return;
+                <label className="input-label" style={{ fontSize: '0.9375rem', fontWeight: 700 }}>Product Images (Ratio 4:5)</label>
+                
+                {/* Main Image */}
+                <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '1rem' }}>
+                  <label className="input-label" style={{ marginBottom: '0.5rem' }}>Main Image *</label>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <input 
+                        id="mainImageInput"
+                        type="file" 
+                        accept="image/png, image/jpeg, image/webp"
+                        className="input" 
+                        style={{ padding: '0.375rem' }}
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            try {
+                              const optimizedDataUrl = await optimizeImage(file);
+                              set('imageUrl', optimizedDataUrl);
+                            } catch (err) {
+                              console.error("Failed to optimize image", err);
+                              alert("Failed to process image.");
+                            }
                           }
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            set('imageUrl', reader.result);
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }} 
-                    />
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.375rem' }}>
-                      Selecting a new file will replace the current image. Max size: 1MB.
+                          e.target.value = '';
+                        }} 
+                      />
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.375rem' }}>
+                        This is the primary image shown everywhere. Max size: 1MB.
+                      </div>
                     </div>
+                    {form.imageUrl && (
+                      <div style={{ width: '80px', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative', flexShrink: 0 }}>
+                        <img src={form.imageUrl} alt="Main Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            set('imageUrl', '');
+                            const el = document.getElementById('mainImageInput');
+                            if (el) el.value = '';
+                          }}
+                          title="Remove image"
+                          style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  {form.imageUrl && (
-                    <div style={{ width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative', flexShrink: 0 }}>
-                      <img src={form.imageUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <button 
-                        type="button"
-                        onClick={() => set('imageUrl', '')}
-                        title="Remove image"
-                        style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                      >
-                        <X size={12} />
-                      </button>
+                </div>
+
+                {/* Extra Images */}
+                <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: 'var(--radius)' }}>
+                  <label className="input-label" style={{ marginBottom: '0.5rem' }}>Extra Images (Gallery thumbnails)</label>
+                  <input 
+                    id="extraImagesInput"
+                    type="file" 
+                    accept="image/png, image/jpeg, image/webp"
+                    className="input" 
+                    multiple
+                    style={{ padding: '0.375rem', marginBottom: '1rem' }}
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files);
+                      for (const file of files) {
+                        try {
+                          const optimizedDataUrl = await optimizeImage(file);
+                          setForm(prev => ({ ...prev, extraImages: [...prev.extraImages, optimizedDataUrl] }));
+                        } catch (err) {
+                          console.error("Failed to optimize extra image", err);
+                        }
+                      }
+                      e.target.value = ''; // reset so they can add more
+                    }} 
+                  />
+                  
+                  {form.extraImages && form.extraImages.length > 0 && (
+                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      {form.extraImages.map((img, idx) => (
+                        <div key={idx} style={{ width: '64px', height: '80px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
+                          <img src={img} alt={`Extra ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setForm(prev => ({ ...prev, extraImages: prev.extraImages.filter((_, i) => i !== idx) }));
+                              const el = document.getElementById('extraImagesInput');
+                              if (el) el.value = '';
+                            }}
+                            style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

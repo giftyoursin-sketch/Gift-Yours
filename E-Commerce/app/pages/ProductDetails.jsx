@@ -34,13 +34,26 @@ export default function ProductDetails() {
       setProduct(found);
       
       if (found) {
-        // Generate placeholder gallery images
-        setImages([
-          getProductImagePath(found.category, found.name, 'cover.jpg'),
-          getProductImagePath(found.category, found.name, 'gallery-1.jpg'),
-          getProductImagePath(found.category, found.name, 'gallery-2.jpg'),
-          getProductImagePath(found.category, found.name, 'gallery-3.jpg'),
-        ]);
+        // Build image array from database
+        let dynamicImages = [];
+        if (found.imageUrl) {
+          dynamicImages.push(found.imageUrl);
+        }
+        if (found.extraImages && Array.isArray(found.extraImages)) {
+          dynamicImages = dynamicImages.concat(found.extraImages);
+        }
+
+        if (dynamicImages.length > 0) {
+          setImages(dynamicImages);
+        } else {
+          // Generate placeholder gallery images
+          setImages([
+            getProductImagePath(found.category, found.name, 'cover.jpg'),
+            getProductImagePath(found.category, found.name, 'gallery-1.jpg'),
+            getProductImagePath(found.category, found.name, 'gallery-2.jpg'),
+            getProductImagePath(found.category, found.name, 'gallery-3.jpg'),
+          ]);
+        }
         setActiveImage(0);
         
         // Phase 4: Track View and Fetch Reviews

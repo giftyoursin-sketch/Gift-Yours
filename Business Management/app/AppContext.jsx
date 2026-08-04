@@ -22,6 +22,7 @@ const productFromDB = (p) => !p ? null : ({
   sellingPrice: p.selling_price, designerCost: p.designer_cost, printLaminationDefaultPrice: p.print_lamination_default_price, stock: p.stock, minStock: p.min_stock,
   supplier: p.supplier, notes: p.notes, status: p.status,
   imageUrl: p.image_url,
+  extraImages: safeParseJSON(p.extra_images),
   createdAt: p.created_at, updatedAt: p.updated_at,
 });
 const productToDB = (p) => ({
@@ -30,6 +31,7 @@ const productToDB = (p) => ({
   selling_price: p.sellingPrice || 0, designer_cost: p.designerCost || 0, print_lamination_default_price: p.printLaminationDefaultPrice || 0, stock: p.stock || 0, min_stock: p.minStock || 5,
   supplier: p.supplier, notes: p.notes, status: p.status || 'active',
   image_url: p.imageUrl || null,
+  extra_images: p.extraImages || [],
   updated_at: new Date().toISOString(),
 });
 
