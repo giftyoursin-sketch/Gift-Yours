@@ -109,7 +109,7 @@ export default function ProductForm({ product, onClose, onSave }) {
 
               {/* Image Upload */}
               <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-                <label className="input-label" style={{ fontSize: '0.9375rem', fontWeight: 700 }}>Product Images (Ratio 4:5)</label>
+                <label className="input-label" style={{ fontSize: '0.9375rem', fontWeight: 700 }}>Product Images (Ratio 1:1)</label>
                 
                 {/* Main Image */}
                 <div style={{ background: 'var(--surface-2)', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '1rem' }}>
@@ -125,6 +125,11 @@ export default function ProductForm({ product, onClose, onSave }) {
                         onChange={async (e) => {
                           const file = e.target.files[0];
                           if (file) {
+                            if (file.size > 1024 * 1024) {
+                              alert("File size exceeds 1MB. Please upload a smaller image.");
+                              e.target.value = '';
+                              return;
+                            }
                             try {
                               const optimizedDataUrl = await optimizeImage(file);
                               set('imageUrl', optimizedDataUrl);
@@ -141,7 +146,7 @@ export default function ProductForm({ product, onClose, onSave }) {
                       </div>
                     </div>
                     {form.imageUrl && (
-                      <div style={{ width: '80px', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative', flexShrink: 0 }}>
+                      <div style={{ width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative', flexShrink: 0 }}>
                         <img src={form.imageUrl} alt="Main Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button 
                           type="button"
@@ -173,6 +178,10 @@ export default function ProductForm({ product, onClose, onSave }) {
                     onChange={async (e) => {
                       const files = Array.from(e.target.files);
                       for (const file of files) {
+                        if (file.size > 1024 * 1024) {
+                          alert(`File ${file.name} exceeds 1MB and will be skipped.`);
+                          continue;
+                        }
                         try {
                           const optimizedDataUrl = await optimizeImage(file);
                           setForm(prev => ({ ...prev, extraImages: [...prev.extraImages, optimizedDataUrl] }));
@@ -187,7 +196,7 @@ export default function ProductForm({ product, onClose, onSave }) {
                   {form.extraImages && form.extraImages.length > 0 && (
                     <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                       {form.extraImages.map((img, idx) => (
-                        <div key={idx} style={{ width: '64px', height: '80px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
+                        <div key={idx} style={{ width: '64px', height: '64px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
                           <img src={img} alt={`Extra ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           <button 
                             type="button"

@@ -82,7 +82,7 @@ const ProductCard = React.memo(({ product }) => {
         to={`/product/${product.id}`} 
         style={{ 
           position: 'relative', 
-          aspectRatio: '4/5', /* 4:5 Aspect Ratio */
+          aspectRatio: '1/1', /* 1:1 Aspect Ratio */
           backgroundColor: 'var(--color-bg-alt)',
           overflow: 'hidden'
         }}
@@ -143,8 +143,8 @@ const ProductCard = React.memo(({ product }) => {
         <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
           <h3 className="product-title" style={{ 
             fontWeight: 600, color: 'var(--color-text-main)', 
-            marginBottom: '0.5rem', lineHeight: 1.4,
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+            marginBottom: '0.25rem', lineHeight: 1.4,
+            display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden'
           }}>
             {product.name}
           </h3>
@@ -183,8 +183,8 @@ const ProductCard = React.memo(({ product }) => {
           font-size: 1.125rem;
         }
         .price-container {
-          margin-top: auto;
-          padding-top: 1rem;
+          margin-top: 0.5rem;
+          padding-top: 0;
         }
         @media (max-width: 768px) {
           .product-card-body {
@@ -199,7 +199,7 @@ const ProductCard = React.memo(({ product }) => {
           }
           .price-container {
             margin-top: 0.25rem !important;
-            padding-top: 0.25rem !important;
+            padding-top: 0 !important;
           }
           .mobile-compact-btn {
             width: 28px !important;
