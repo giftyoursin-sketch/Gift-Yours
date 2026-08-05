@@ -16,7 +16,7 @@ const PAGE_TITLES = {
 };
 
 const Topbar = memo(({ onMenuToggle }) => {
-  const { settings, saveSetting, notifications } = useApp();
+  const { settings, saveSetting, notifications, loading } = useApp();
   const location = useLocation();
   const title = PAGE_TITLES[location.pathname] || 'Gift Yours';
   const unread = notifications.length;
@@ -125,6 +125,13 @@ const Topbar = memo(({ onMenuToggle }) => {
         </div>
 
         <div style={{ width: '1px', height: '24px', background: 'var(--surface-border)', margin: '0 0.5rem' }} className="desktop-only" />
+
+        {loading && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.25rem 0.5rem', background: 'var(--primary-alpha-10)', color: 'var(--primary)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+            <div style={{ width: 12, height: 12, border: '2px solid var(--primary-alpha-20)', borderTop: '2px solid var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+            <span className="desktop-only">Syncing...</span>
+          </div>
+        )}
 
         {/* Theme toggle */}
         <button className="btn btn-ghost btn-icon-sm" onClick={toggleTheme} title="Toggle theme">
