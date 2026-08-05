@@ -37,7 +37,7 @@ const NAV_GROUPS = [
     matchPaths: [`${basePath}/products`, `${basePath}/frame-configuration`, `${basePath}/inventory`],
     items: [
       { to: `${basePath}/products`,  icon: Package, label: 'Products'  },
-      { to: `${basePath}/frame-configuration`, icon: SlidersHorizontal, label: 'Frame Config' },
+
       { to: `${basePath}/inventory`, icon: Layers,  label: 'Inventory' },
     ],
   },
