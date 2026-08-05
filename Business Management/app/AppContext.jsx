@@ -129,25 +129,37 @@ const frameConfigToDB = (f) => ({
   updated_at: new Date().toISOString(),
 });
 
-// ─── State ───────────────────────────────────────────────────
+let cachedState = null;
+try {
+  const cached = localStorage.getItem('business_app_cache');
+  if (cached) cachedState = JSON.parse(cached);
+} catch (e) {}
+
 const initialState = {
-  products: [], categories: [], customers: [], sales: [], invoices: [],
-  expenses: [], stockHistory: [], frameConfigurations: [],
-  settings: {
+  products: cachedState?.products || [],
+  categories: cachedState?.categories || [],
+  customers: cachedState?.customers || [],
+  sales: cachedState?.sales || [],
+  invoices: cachedState?.invoices || [],
+  expenses: cachedState?.expenses || [],
+  stockHistory: cachedState?.stockHistory || [],
+  frameConfigurations: cachedState?.frameConfigurations || [],
+  settings: cachedState?.settings || {
     businessName: 'Gift Yours', phone: '', address: '',
-    invoicePrefix: 'INV', currency: '₹', theme: 'light', nextInvoiceNumber: 1,
     invoicePrefix: 'INV', currency: '₹', theme: 'light', nextInvoiceNumber: 1,
     expenseCategories: 'Salary, Rent, Utilities, Marketing, Supplies, Maintenance, Taxes, Other',
   },
   notifications: [],
-  loading: true,
+  loading: !cachedState, // if we have cache, don't show full loading screen
   dbError: false,
   globalMonth: format(new Date(), 'yyyy-MM'),
 };
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'LOAD_ALL': return { ...state, ...action.payload, loading: false };
+    case 'LOAD_ALL': 
+      try { localStorage.setItem('business_app_cache', JSON.stringify({ ...state, ...action.payload, loading: false })); } catch(e) {}
+      return { ...state, ...action.payload, loading: false };
     case 'SET_PRODUCTS': return { ...state, products: action.payload };
     case 'SET_CATEGORIES': return { ...state, categories: action.payload };
     case 'SET_CUSTOMERS': return { ...state, customers: action.payload };

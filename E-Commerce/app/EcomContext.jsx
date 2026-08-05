@@ -4,11 +4,17 @@ import { supabase } from '../lib/supabase';
 const EcomContext = createContext(null);
 
 export function EcomProvider({ children }) {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [frameConfigurations, setFrameConfigurations] = useState([]);
-  const [settings, setSettings] = useState({});
-  const [loading, setLoading] = useState(true);
+  let cached = null;
+  try {
+    const cachedStr = localStorage.getItem('ecom_app_cache');
+    if (cachedStr) cached = JSON.parse(cachedStr);
+  } catch (e) {}
+
+  const [products, setProducts] = useState(cached?.products || []);
+  const [categories, setCategories] = useState(cached?.categories || []);
+  const [frameConfigurations, setFrameConfigurations] = useState(cached?.frameConfigurations || []);
+  const [settings, setSettings] = useState(cached?.settings || {});
+  const [loading, setLoading] = useState(!cached); // skip loader if cached
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -61,11 +67,12 @@ export function EcomProvider({ children }) {
 
         setCategories(nestedCategories);
 
+        let mappedConfigs = [];
         if (frameError) {
           console.log('Frame configs table might not exist yet.', frameError);
         } else if (frameData) {
           const activeFrames = frameData.filter(f => f.is_active === true || f.is_active === null || f.is_active === undefined);
-          const mappedConfigs = activeFrames.map(f => ({
+          mappedConfigs = activeFrames.map(f => ({
             id: f.id, type: f.type, name: f.name, value: f.value,
             price: parseFloat(f.price) || 0, offerPrice: f.offer_price ? parseFloat(f.offer_price) : null,
             thumbnailUrl: f.thumbnail_url, sortOrder: f.sort_order,
@@ -91,6 +98,15 @@ export function EcomProvider({ children }) {
         }));
 
         setProducts(mappedProducts);
+
+        try {
+          localStorage.setItem('ecom_app_cache', JSON.stringify({
+            products: mappedProducts,
+            categories: nestedCategories,
+            settings: settingsMap,
+            frameConfigurations: mappedConfigs || []
+          }));
+        } catch(e) {}
       } catch (err) {
         console.error("Error loading e-commerce data:", err);
         setError(err.message);
