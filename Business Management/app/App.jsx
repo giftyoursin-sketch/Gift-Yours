@@ -6,6 +6,9 @@ import AppLayout from '../components/layout/AppLayout';
 // Pages
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import Categories from './pages/Categories';
+import FrameConfiguration from './pages/FrameConfiguration';
+import Customers from './pages/Customers';
 import Inventory from './pages/Inventory';
 import Invoices from './pages/Invoices';
 import InvoiceBuilder from './pages/Invoices/InvoiceBuilder';
@@ -22,7 +25,7 @@ import AnalyticsCustomers from './pages/Analytics/Customers';
 import CustomerProfile from './pages/Analytics/CustomerProfile';
 import AnalyticsProducts from './pages/Analytics/Products';
 import ProductDetail from './pages/Analytics/ProductDetail';
-import Categories from './pages/Analytics/Categories';
+import AnalyticsCategories from './pages/Analytics/Categories';
 import ConversionFunnel from './pages/Analytics/ConversionFunnel';
 import Revenue from './pages/Analytics/Revenue';
 import SearchAnalytics from './pages/Analytics/SearchAnalytics';
@@ -42,6 +45,9 @@ export default function BusinessApp() {
         <Route path="/" element={<AppLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
+          <Route path="categories" element={<Categories />} />
+          <Route path="frame-configuration" element={<FrameConfiguration />} />
+          <Route path="customers" element={<Customers />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="invoices/new" element={<InvoiceBuilder />} />
@@ -59,7 +65,7 @@ export default function BusinessApp() {
           <Route path="analytics/customers/:phone" element={<CustomerProfile />} />
           <Route path="analytics/products" element={<AnalyticsProducts />} />
           <Route path="analytics/products/:id" element={<ProductDetail />} />
-          <Route path="analytics/categories" element={<Categories />} />
+          <Route path="analytics/categories" element={<AnalyticsCategories />} />
           <Route path="analytics/funnel" element={<ConversionFunnel />} />
           <Route path="analytics/revenue" element={<Revenue />} />
           <Route path="analytics/search" element={<SearchAnalytics />} />

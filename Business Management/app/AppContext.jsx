@@ -23,7 +23,20 @@ const productFromDB = (p) => !p ? null : ({
   supplier: p.supplier, notes: p.notes, status: p.status,
   imageUrl: p.image_url,
   extraImages: safeParseJSON(p.extra_images),
+  extraImages: safeParseJSON(p.extra_images),
   createdAt: p.created_at, updatedAt: p.updated_at,
+});
+const categoryFromDB = (c) => !c ? null : ({
+  id: c.id, parentId: c.parent_id, name: c.name, slug: c.slug,
+  description: c.description, icon: c.icon, bannerImage: c.banner_image,
+  sortOrder: c.sort_order, status: c.status,
+  createdAt: c.created_at, updatedAt: c.updated_at,
+});
+const categoryToDB = (c) => ({
+  id: c.id, parent_id: c.parentId || null, name: c.name, slug: c.slug,
+  description: c.description, icon: c.icon, banner_image: c.bannerImage,
+  sort_order: c.sortOrder || 0, status: c.status || 'active',
+  updated_at: new Date().toISOString(),
 });
 const productToDB = (p) => ({
   id: p.id, name: p.name, category: p.category, sku: p.sku,
@@ -101,14 +114,29 @@ const customerToDB = (c) => ({
   address: c.address, notes: c.notes, updated_at: new Date().toISOString(),
 });
 
+// Frame Configs
+const frameConfigFromDB = (f) => !f ? null : ({
+  id: f.id, type: f.type, name: f.name, value: f.value,
+  price: parseFloat(f.price) || 0, offerPrice: f.offer_price ? parseFloat(f.offer_price) : null,
+  thumbnailUrl: f.thumbnail_url, sortOrder: f.sort_order,
+  isActive: f.is_active, createdAt: f.created_at,
+});
+const frameConfigToDB = (f) => ({
+  id: f.id, type: f.type, name: f.name, value: f.value,
+  price: f.price || 0, offer_price: f.offerPrice || null,
+  thumbnail_url: f.thumbnailUrl || null, sort_order: f.sortOrder || 0,
+  is_active: f.isActive !== undefined ? f.isActive : true,
+  updated_at: new Date().toISOString(),
+});
+
 // ─── State ───────────────────────────────────────────────────
 const initialState = {
-  products: [], customers: [], sales: [], invoices: [],
-  expenses: [], stockHistory: [],
+  products: [], categories: [], customers: [], sales: [], invoices: [],
+  expenses: [], stockHistory: [], frameConfigurations: [],
   settings: {
     businessName: 'Gift Yours', phone: '', address: '',
     invoicePrefix: 'INV', currency: '₹', theme: 'light', nextInvoiceNumber: 1,
-    productCategories: 'Photo Frames, Gift Items, Personalized Gifts, Home Decor, Photo Gifts, Customized Products, Other',
+    invoicePrefix: 'INV', currency: '₹', theme: 'light', nextInvoiceNumber: 1,
     expenseCategories: 'Salary, Rent, Utilities, Marketing, Supplies, Maintenance, Taxes, Other',
   },
   notifications: [],
@@ -121,11 +149,13 @@ function reducer(state, action) {
   switch (action.type) {
     case 'LOAD_ALL': return { ...state, ...action.payload, loading: false };
     case 'SET_PRODUCTS': return { ...state, products: action.payload };
+    case 'SET_CATEGORIES': return { ...state, categories: action.payload };
     case 'SET_CUSTOMERS': return { ...state, customers: action.payload };
     case 'SET_SALES': return { ...state, sales: action.payload };
     case 'SET_INVOICES': return { ...state, invoices: action.payload };
     case 'SET_EXPENSES': return { ...state, expenses: action.payload };
     case 'SET_STOCK_HISTORY': return { ...state, stockHistory: action.payload };
+    case 'SET_FRAME_CONFIGS': return { ...state, frameConfigurations: action.payload };
     case 'SET_SETTINGS': return { ...state, settings: { ...state.settings, ...action.payload } };
     case 'ADD_NOTIFICATION': return { ...state, notifications: [action.payload, ...state.notifications].slice(0, 20) };
     case 'REMOVE_NOTIFICATION': return { ...state, notifications: state.notifications.filter(n => n.id !== action.payload) };
@@ -143,6 +173,18 @@ export function AppProvider({ children }) {
   useEffect(() => {
     async function loadAll() {
       try {
+        const results = await Promise.all([
+          supabase.from('products').select('*').order('created_at', { ascending: false }),
+          supabase.from('customers').select('*').order('created_at', { ascending: false }),
+          supabase.from('sales').select('*').order('created_at', { ascending: false }),
+          supabase.from('invoices').select('*').order('created_at', { ascending: false }),
+          supabase.from('expenses').select('*').order('created_at', { ascending: false }),
+          supabase.from('stock_history').select('*').order('timestamp', { ascending: false }),
+          supabase.from('categories').select('*').order('sort_order', { ascending: true }),
+          supabase.from('settings').select('*'),
+          supabase.from('frame_configurations').select('*').order('sort_order', { ascending: true })
+        ]);
+
         const [
           { data: products, error: e1 },
           { data: customers, error: e2 },
@@ -150,19 +192,13 @@ export function AppProvider({ children }) {
           { data: invoices, error: e4 },
           { data: expenses, error: e5 },
           { data: stockHistory, error: e6 },
+          { data: categories, error: e8 },
           { data: settingsRows, error: e7 },
-        ] = await Promise.all([
-          supabase.from('products').select('*').order('created_at', { ascending: false }),
-          supabase.from('customers').select('*').order('created_at', { ascending: false }),
-          supabase.from('sales').select('*').order('created_at', { ascending: false }),
-          supabase.from('invoices').select('*').order('created_at', { ascending: false }),
-          supabase.from('expenses').select('*').order('created_at', { ascending: false }),
-          supabase.from('stock_history').select('*').order('timestamp', { ascending: false }),
-          supabase.from('settings').select('*'),
-        ]);
+          { data: frameConfigsData, error: e9 },
+        ] = results;
 
-        if (e1 || e2 || e3 || e4 || e5 || e6) {
-          const errs = [e1, e2, e3, e4, e5, e6].filter(Boolean);
+        if (e1 || e2 || e3 || e4 || e5 || e6 || e8) {
+          const errs = [e1, e2, e3, e4, e5, e6, e8].filter(Boolean);
           console.error('Supabase load errors:', errs);
           dispatch({ type: 'SET_DB_ERROR', payload: errs[0]?.message || JSON.stringify(errs[0]) });
           return;
@@ -175,11 +211,13 @@ export function AppProvider({ children }) {
           type: 'LOAD_ALL',
           payload: {
             products: (products || []).map(productFromDB),
+            categories: (categories || []).map(categoryFromDB),
             customers: (customers || []).map(customerFromDB),
             sales: (sales || []).map(saleFromDB),
             invoices: (invoices || []).map(invoiceFromDB),
             expenses: (expenses || []).map(expenseFromDB),
             stockHistory: (stockHistory || []).map(stockHistoryFromDB),
+            frameConfigurations: (frameConfigsData || []).map(frameConfigFromDB),
             settings: {
               ...initialState.settings,
               ...settings,
@@ -189,7 +227,7 @@ export function AppProvider({ children }) {
         });
       } catch (err) {
         console.error('Fatal load error:', err);
-        dispatch({ type: 'SET_DB_ERROR' });
+        dispatch({ type: 'SET_DB_ERROR', payload: err.message || err.toString() });
       }
     }
     loadAll();
@@ -207,6 +245,35 @@ export function AppProvider({ children }) {
   const removeNotification = useCallback((id) => {
     dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
   }, []);
+
+  // ─── CATEGORIES ──────────────────────────────────────────────
+  const addCategory = useCallback(async (data) => {
+    const category = { ...data, id: generateId(), createdAt: new Date().toISOString() };
+    const { error } = await supabase.from('categories').insert([{ ...categoryToDB(category), created_at: category.createdAt }]);
+    if (error) { notify('Failed to add category', 'error'); console.error(error); return; }
+    const { data: all } = await supabase.from('categories').select('*').order('sort_order', { ascending: true });
+    dispatch({ type: 'SET_CATEGORIES', payload: (all || []).map(categoryFromDB) });
+    notify('Category added successfully', 'success');
+    return category;
+  }, [notify]);
+
+  const updateCategory = useCallback(async (id, data) => {
+    const existing = state.categories.find(c => c.id === id);
+    if (!existing) return;
+    const updated = { ...existing, ...data };
+    const { error } = await supabase.from('categories').update(categoryToDB(updated)).eq('id', id);
+    if (error) { notify('Failed to update category', 'error'); console.error(error); return; }
+    const { data: all } = await supabase.from('categories').select('*').order('sort_order', { ascending: true });
+    dispatch({ type: 'SET_CATEGORIES', payload: (all || []).map(categoryFromDB) });
+    notify('Category updated', 'success');
+  }, [state.categories, notify]);
+
+  const deleteCategory = useCallback(async (id) => {
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (error) { notify('Failed to delete category (Ensure no subcategories depend on it)', 'error'); return; }
+    dispatch({ type: 'SET_CATEGORIES', payload: state.categories.filter(c => c.id !== id) });
+    notify('Category deleted', 'success');
+  }, [state.categories, notify]);
 
   // ─── PRODUCTS ────────────────────────────────────────────────
   const addProduct = useCallback(async (data) => {
@@ -414,6 +481,33 @@ export function AppProvider({ children }) {
     notify('Expense deleted', 'success');
   }, [state.expenses, notify]);
 
+  // ─── FRAME CONFIGURATIONS ────────────────────────────────────
+  const addFrameConfig = useCallback(async (data) => {
+    const config = { ...data, id: generateId(), createdAt: new Date().toISOString() };
+    const { error } = await supabase.from('frame_configurations').insert([{ ...frameConfigToDB(config), created_at: config.createdAt }]);
+    if (error) { notify('Failed to add configuration', 'error'); console.error(error); return; }
+    const { data: all } = await supabase.from('frame_configurations').select('*').order('sort_order', { ascending: true });
+    dispatch({ type: 'SET_FRAME_CONFIGS', payload: (all || []).map(frameConfigFromDB) });
+    notify('Configuration added', 'success');
+  }, [notify]);
+
+  const updateFrameConfig = useCallback(async (id, data) => {
+    const existing = state.frameConfigurations.find(c => c.id === id);
+    if (!existing) return;
+    const { error } = await supabase.from('frame_configurations').update(frameConfigToDB({ ...existing, ...data })).eq('id', id);
+    if (error) { notify('Failed to update configuration', 'error'); return; }
+    const { data: all } = await supabase.from('frame_configurations').select('*').order('sort_order', { ascending: true });
+    dispatch({ type: 'SET_FRAME_CONFIGS', payload: (all || []).map(frameConfigFromDB) });
+    notify('Configuration updated', 'success');
+  }, [state.frameConfigurations, notify]);
+
+  const deleteFrameConfig = useCallback(async (id) => {
+    const { error } = await supabase.from('frame_configurations').delete().eq('id', id);
+    if (error) { notify('Failed to delete configuration', 'error'); return; }
+    dispatch({ type: 'SET_FRAME_CONFIGS', payload: state.frameConfigurations.filter(c => c.id !== id) });
+    notify('Configuration deleted', 'success');
+  }, [state.frameConfigurations, notify]);
+
   // ─── SETTINGS ────────────────────────────────────────────────
   const saveSetting = useCallback(async (key, value) => {
     await supabase.from('settings').upsert([{ key, value: String(value) }]);
@@ -503,6 +597,8 @@ export function AppProvider({ children }) {
 
   const value = {
     ...state,
+    // Categories
+    addCategory, updateCategory, deleteCategory,
     // Products
     addProduct, updateProduct, deleteProduct, updateProductStock,
     // Customers
@@ -513,6 +609,8 @@ export function AppProvider({ children }) {
     addInvoice, updateInvoice, deleteInvoice, receivePayment,
     // Expenses
     addExpense, updateExpense, deleteExpense,
+    // Frame Configs
+    addFrameConfig, updateFrameConfig, deleteFrameConfig,
     // Settings
     saveSetting, saveSettings,
     // Utils

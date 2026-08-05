@@ -50,12 +50,12 @@ export default function Home() {
         const { data } = await supabase.from('recently_viewed').select('product_id').eq('customer_id', user.id).order('viewed_at', { ascending: false }).limit(4);
         if (data) {
           const ids = data.map(d => d.product_id);
-          setRecentProducts(products.filter(p => ids.includes(p.id)));
+          setRecentProducts((products || []).filter(p => ids.includes(p?.id)));
         }
       } else {
         try {
           const ids = JSON.parse(localStorage.getItem('recently_viewed') || '[]');
-          setRecentProducts(products.filter(p => ids.includes(p.id)).slice(0, 4));
+          setRecentProducts((products || []).filter(p => ids.includes(p?.id)).slice(0, 4));
         } catch(e) {}
       }
     }
@@ -98,6 +98,18 @@ export default function Home() {
     return () => clearInterval(timer);
   }, [slides.length]);
 
+  const safeProducts = products || [];
+  const safeCategories = categories || [];
+
+  const frame12x8 = useMemo(() => safeProducts.find(p => String(p?.name || '').toLowerCase().includes('12x8')), [safeProducts]);
+  const featuredProducts = useMemo(() => {
+    if (frame12x8) {
+      return [frame12x8, ...safeProducts.filter(p => p?.id !== frame12x8.id).slice(0, 3)];
+    }
+    return safeProducts.slice(0, 4);
+  }, [safeProducts, frame12x8]);
+  const newArrivals = useMemo(() => safeProducts.slice(4, 8), [safeProducts]);
+
   if (loading) {
     return (
       <div className="container section flex-center" style={{ minHeight: '60vh' }}>
@@ -108,15 +120,6 @@ export default function Home() {
       </div>
     );
   }
-
-  const frame12x8 = useMemo(() => products.find(p => p.name.toLowerCase().includes('12x8')), [products]);
-  const featuredProducts = useMemo(() => {
-    if (frame12x8) {
-      return [frame12x8, ...products.filter(p => p.id !== frame12x8.id).slice(0, 3)];
-    }
-    return products.slice(0, 4);
-  }, [products, frame12x8]);
-  const newArrivals = useMemo(() => products.slice(4, 8), [products]);
 
   return (
     <div>
@@ -217,7 +220,7 @@ export default function Home() {
               <Sparkles className="anim-sparkles-premium" size={16} /> Premium Personalized Gifts
             </div>
             
-            <h1 className="h1" style={{ color: 'var(--color-dark)', marginBottom: '1rem', lineHeight: 1.2 }}>
+            <h1 className="h1 font-premium" style={{ color: 'var(--color-dark)', marginBottom: '1rem', lineHeight: 1.2 }}>
               Make Every Occasion <br className="desktop-only"/> <span className="mobile-space"> </span>
               <TypewriterText words={['Unforgettable', 'Special', 'Magical', 'Memorable', 'Beautiful']} />
             </h1>
@@ -262,7 +265,7 @@ export default function Home() {
       <section className="section container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1rem' }}>
           <div>
-            <h2 className="h2">Shop by Category</h2>
+            <h2 className="h2 font-premium">Shop by Category</h2>
             <p className="subtitle">Discover our wide range of personalized items.</p>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -274,22 +277,22 @@ export default function Home() {
 
         <div className="grid-cols-4 mobile-carousel mobile-3-cards">
           {(() => {
-            const dynamicCats = categories.slice(0, 3).map((cat, i) => {
+            const dynamicCats = safeCategories.slice(0, 3).map((cat, i) => {
               const images = [
                 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop', 
                 'https://images.unsplash.com/photo-1628157588553-5eeea00af15c?q=80&w=800&auto=format&fit=crop', 
                 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop'  
               ];
-              return { name: cat, img: images[i % images.length], count: '150+ Designs' };
+              return { name: cat.name, slug: cat.slug, img: images[i % images.length], count: '150+ Designs' };
             });
             
             const displayCategories = [
               ...dynamicCats,
-              { name: 'Visiting Cards', img: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?q=80&w=800&auto=format&fit=crop', count: '50+ Templates' } 
+              { name: 'Visiting Cards', slug: 'visiting-cards', img: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?q=80&w=800&auto=format&fit=crop', count: '50+ Templates' } 
             ];
 
             return displayCategories.map((cat, i) => (
-              <Link key={cat.name} to={`/category/${toSlug(cat.name)}`} className="hover-zoom-img hover-slide-arrow" style={{ 
+              <Link key={cat.name} to={`/category/${cat.slug || toSlug(cat.name)}`} className="hover-zoom-img hover-slide-arrow" style={{ 
                 position: 'relative', borderRadius: 'var(--radius-xl)', overflow: 'hidden',
                 aspectRatio: '4/5', display: 'flex', alignItems: 'flex-end', padding: '1.5rem',
                 textDecoration: 'none', boxShadow: 'var(--shadow-md)'
@@ -328,7 +331,7 @@ export default function Home() {
       {/* ─── FEATURED COLLECTIONS ─── */}
       <section className="section container" style={{ position: 'relative' }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 className="h2">Featured Collections</h2>
+          <h2 className="h2 font-premium">Featured Collections</h2>
           <p className="subtitle" style={{ maxWidth: '600px', margin: '0 auto' }}>Handpicked favorites just for you.</p>
         </div>
         
@@ -352,7 +355,7 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', position: 'relative', zIndex: 2 }}>
           <div>
-            <h2 className="h2">Best Sellers</h2>
+            <h2 className="h2 font-premium">Best Sellers</h2>
             <p className="subtitle">Most loved items by our customers.</p>
           </div>
           <Link to="/products" className="btn btn-primary ripple desktop-only" style={{ borderRadius: 'var(--radius-full)' }}>
@@ -376,7 +379,7 @@ export default function Home() {
       {/* ─── WHY GIFT YOURS (3D ICONS) ─── */}
       <section className="features-section" style={{ backgroundColor: 'var(--color-dark)', padding: '5rem 0' }}>
         <div className="container features-header-container" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-          <h2 className="h2" style={{ color: '#fff' }}>Why Gift Yours</h2>
+          <h2 className="h2 font-premium" style={{ color: '#fff' }}>Why Gift Yours</h2>
           <p className="subtitle" style={{ color: 'rgba(255,255,255,0.7)' }}>The premium gifting experience you deserve.</p>
         </div>
         <div className="container grid-cols-4 features-container mobile-carousel">
@@ -417,7 +420,7 @@ export default function Home() {
       {/* ─── GIFT BY OCCASION (IMAGE CAROUSEL) ─── */}
       <section className="section" style={{ overflowX: 'hidden' }}>
         <div className="container" style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 className="h2">Gift by Occasion</h2>
+          <h2 className="h2 font-premium">Gift by Occasion</h2>
           <p className="subtitle">Find the perfect present for any special moment.</p>
         </div>
         
@@ -466,7 +469,7 @@ export default function Home() {
           <img src="/Heart 1.png" alt="Red Heart" loading="lazy" style={{ width: '100%', height: 'auto', objectFit: 'contain', transform: 'rotate(15deg)' }} />
         </div>
         <div style={{ textAlign: 'center', marginBottom: '3rem', position: 'relative', zIndex: 2 }}>
-          <h2 className="h2">Customer Reviews</h2>
+          <h2 className="h2 font-premium">Customer Reviews</h2>
           <p className="subtitle">Loved by thousands of happy customers.</p>
         </div>
         <div className="grid-cols-3 mobile-carousel reviews-carousel">
@@ -494,7 +497,7 @@ export default function Home() {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--color-primary)' }}>
             <Camera size={20} /> <span style={{ fontWeight: 600 }}>@giftyours</span>
           </div>
-          <h2 className="h2">Follow us on Instagram</h2>
+          <h2 className="h2 font-premium">Follow us on Instagram</h2>
         </div>
         <div className="insta-grid-container" style={{ display: 'grid', gap: '1.5rem' }}>
           {[
@@ -528,7 +531,7 @@ export default function Home() {
                   pointerEvents: 'none'
                 }}
                 scrolling="no"
-                allowTransparency="true"
+                allowtransparency="true"
               ></iframe>
               
               {/* Cover top header */}
@@ -568,7 +571,7 @@ export default function Home() {
               <Mail color="#fff" size={28} />
             </div>
             
-            <h2 className="h2" style={{ color: '#ffffff', marginBottom: '1rem', fontSize: '2.5rem' }}>Get Exclusive Offers</h2>
+            <h2 className="h2 font-premium" style={{ color: '#ffffff', marginBottom: '1rem', fontSize: '2.5rem' }}>Get Exclusive Offers</h2>
             <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '2.5rem', fontSize: '1.125rem' }}>Join 5,000+ Customers receiving premium gifts and deals directly to their inbox.</p>
             
             {/* Unified Premium Form */}

@@ -27,16 +27,43 @@ export default function ProductList() {
     let result = [...products];
 
     if (slug) {
-      result = result.filter(p => toSlug(p.category) === slug);
+      // Find the category object
+      let currentCatObj = null;
+      let isParent = false;
+      for (const p of categories) {
+        if (p.slug === slug) {
+          currentCatObj = p;
+          isParent = true;
+          break;
+        }
+        const child = p.children?.find(c => c.slug === slug);
+        if (child) {
+          currentCatObj = child;
+          break;
+        }
+      }
+
+      if (currentCatObj) {
+        if (isParent) {
+           // Match "Photo Frames" or "Photo Frames > ..."
+           result = result.filter(p => p.category === currentCatObj.name || p.category.startsWith(currentCatObj.name + ' >'));
+        } else {
+           // Match exact child name (which is at the end of the string)
+           result = result.filter(p => p.category.endsWith(currentCatObj.name));
+        }
+      } else {
+        // Fallback
+        result = result.filter(p => toSlug(p.category) === slug || toSlug(p.category.split('>').pop().trim()) === slug);
+      }
     }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       // Typo tolerance could be added here using string distance, but for now we do simple includes
       result = result.filter(p => 
-        p.name.toLowerCase().includes(q) || 
-        p.category.toLowerCase().includes(q) ||
-        (p.description && p.description.toLowerCase().includes(q))
+        String(p?.name || '').toLowerCase().includes(q) || 
+        String(p?.category || '').toLowerCase().includes(q) ||
+        (p?.description && String(p?.description).toLowerCase().includes(q))
       );
     }
 
@@ -53,11 +80,19 @@ export default function ProductList() {
     // newest is default (assuming array order is newest first for now)
 
     return result;
-  }, [products, slug, searchQuery, sortBy, minPrice, maxPrice, minRating, inStockOnly]);
+  }, [products, slug, searchQuery, sortBy, minPrice, maxPrice, minRating, inStockOnly, categories]);
 
   // Find the readable category name from the slug
-  const currentCategory = categories.find(c => toSlug(c) === slug) || (slug ? 'Category' : 'All Products');
-  const pageTitle = searchQuery ? `Search Results for "${searchQuery}"` : currentCategory;
+  let currentCategoryName = slug ? 'Category' : 'All Products';
+  if (slug) {
+    for (const p of categories) {
+      if (p.slug === slug) { currentCategoryName = p.name; break; }
+      const child = p.children?.find(c => c.slug === slug);
+      if (child) { currentCategoryName = child.name; break; }
+    }
+  }
+
+  const pageTitle = searchQuery ? `Search Results for "${searchQuery}"` : currentCategoryName;
 
   useEffect(() => {
     if (slug) {
@@ -88,7 +123,7 @@ export default function ProductList() {
       {/* Header */}
       <div style={{ marginBottom: '2rem', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem' }}>
         <div>
-          <h1 className="h2">{pageTitle}</h1>
+          <h1 className="h2 font-premium">{pageTitle}</h1>
           <p className="subtitle" style={{ marginTop: '0.5rem' }}>Showing {filteredProducts.length} products</p>
         </div>
 
@@ -130,9 +165,9 @@ export default function ProductList() {
                   </a>
                 </li>
                 {categories.map(cat => (
-                  <li key={cat}>
-                    <a href={`/category/${toSlug(cat)}`} style={{ color: slug === toSlug(cat) ? 'var(--color-primary)' : 'var(--color-text-main)', fontWeight: slug === toSlug(cat) ? 600 : 400 }}>
-                      {cat}
+                  <li key={cat.id}>
+                    <a href={`/category/${cat.slug}`} style={{ color: slug === cat.slug ? 'var(--color-primary)' : 'var(--color-text-main)', fontWeight: slug === cat.slug ? 600 : 400 }}>
+                      {cat.name}
                     </a>
                   </li>
                 ))}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Heart, Search, Menu, X, User } from 'lucide-react';
+import { ShoppingBag, Heart, Search, Menu, X, User, ChevronDown } from 'lucide-react';
 import { useEcom } from '../../app/EcomContext';
 import { toSlug } from '@shared/utils/imageUtils';
 import { useCart } from '../../app/CartContext';
@@ -16,6 +16,7 @@ export default function Header() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState(null);
 
   const brandName = settings?.businessName || 'Gift Yours';
 
@@ -96,22 +97,69 @@ export default function Header() {
         {/* Center: Desktop Navigation */}
         <nav className="desktop-only" id="desktop-nav">
           <ul style={{ display: 'flex', gap: '2rem', listStyle: 'none', margin: 0, padding: 0 }}>
-            {navCategories.map(cat => (
-              <li key={cat}>
+            {navCategories.map(parent => (
+              <li 
+                key={parent.id}
+                style={{ position: 'relative', height: '4rem', display: 'flex', alignItems: 'center' }}
+                onMouseEnter={() => setActiveMegaMenu(parent.id)}
+                onMouseLeave={() => setActiveMegaMenu(null)}
+              >
                 <Link 
-                  to={`/category/${toSlug(cat)}`}
+                  to={`/category/${parent.slug}`}
                   style={{ 
                     fontSize: '0.9375rem', 
                     fontWeight: 500, 
-                    color: 'var(--color-text-main)',
+                    color: activeMegaMenu === parent.id ? 'var(--color-primary)' : 'var(--color-text-main)',
                     textDecoration: 'none',
-                    transition: 'var(--transition-fast)'
+                    transition: 'var(--transition-fast)',
+                    display: 'flex',
+                    alignItems: 'center',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-main)'}
                 >
-                  {cat}
+                  {parent.name}
+                  <ChevronDown size={14} style={{ marginTop: '2px', transition: 'transform 0.2s', transform: activeMegaMenu === parent.id ? 'rotate(180deg)' : 'rotate(0)' }} />
                 </Link>
+
+                {/* Mega Menu Dropdown */}
+                {activeMegaMenu === parent.id && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: '#fff',
+                    boxShadow: 'var(--shadow-lg)',
+                    borderRadius: '0 0 var(--radius-lg) var(--radius-lg)',
+                    border: '1px solid var(--surface-border)',
+                    borderTop: 'none',
+                    padding: '1.25rem',
+                    minWidth: '220px',
+                    zIndex: 100
+                  }}>
+                    {parent.children && parent.children.length > 0 ? (
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {parent.children.map(child => (
+                          <li key={child.id}>
+                            <Link 
+                              to={`/category/${child.slug}`}
+                              style={{ color: 'var(--color-text-secondary)', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, display: 'block' }}
+                              onMouseEnter={e => e.currentTarget.style.color = 'var(--color-primary)'}
+                              onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                              onClick={() => setActiveMegaMenu(null)}
+                            >
+                              {child.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center', lineHeight: '1.4' }}>
+                        No subcategories yet.<br/>
+                        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>Assign "Parent Category" in Business Management.</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -203,15 +251,29 @@ export default function Header() {
 
             <h3 style={{ fontSize: '0.875rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '1rem', letterSpacing: '0.05em' }}>Categories</h3>
             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {categories.map(cat => (
-                <li key={cat}>
+              {categories.map(parent => (
+                <li key={parent.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <Link 
-                    to={`/category/${toSlug(cat)}`}
-                    style={{ fontSize: '1.125rem', fontWeight: 500, color: 'var(--color-text-main)', textDecoration: 'none' }}
+                    to={`/category/${parent.slug}`}
+                    style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--color-text-main)', textDecoration: 'none' }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {cat}
+                    {parent.name}
                   </Link>
+                  {parent.children && parent.children.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingLeft: '1rem', borderLeft: '2px solid var(--surface-border)' }}>
+                      {parent.children.map(child => (
+                        <Link 
+                          key={child.id}
+                          to={`/category/${child.slug}`}
+                          style={{ fontSize: '0.9375rem', color: 'var(--color-text-secondary)', textDecoration: 'none' }}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </li>
               ))}
               <li>

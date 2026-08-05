@@ -6,6 +6,7 @@ const EcomContext = createContext(null);
 export function EcomProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [frameConfigurations, setFrameConfigurations] = useState([]);
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,14 +14,24 @@ export function EcomProvider({ children }) {
   useEffect(() => {
     async function loadData() {
       try {
+        console.log('[EcomContext] Starting loadData...');
         setLoading(true);
 
-        // Fetch settings
-        const { data: settingsData, error: settingsError } = await supabase
-          .from('settings')
-          .select('key, value');
-        
+        const [
+          { data: settingsData, error: settingsError },
+          { data: catData, error: catError },
+          { data: productsData, error: productsError },
+          { data: frameData, error: frameError }
+        ] = await Promise.all([
+          supabase.from('settings').select('key, value'),
+          supabase.from('categories').select('*').eq('status', 'active').order('sort_order', { ascending: true }),
+          supabase.from('products').select('*').eq('status', 'active'),
+          supabase.from('frame_configurations').select('*').order('sort_order', { ascending: true })
+        ]);
+
         if (settingsError) throw settingsError;
+        if (catError) throw catError;
+        if (productsError) throw productsError;
 
         const settingsMap = {};
         settingsData?.forEach(item => {
@@ -28,18 +39,39 @@ export function EcomProvider({ children }) {
         });
         setSettings(settingsMap);
 
-        // Parse categories from settings
-        const catsString = settingsMap.productCategories || 'Photo Frames, Gift Items, Personalized Gifts, Home Decor, Photo Gifts, Customized Products, Other';
-        const parsedCats = catsString.split(',').map(c => c.trim()).filter(Boolean);
-        setCategories(parsedCats);
-
-        // Fetch active products
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('status', 'active');
+        // Build hierarchical categories structure
+        const parentMap = new Map();
+        const childrenMap = new Map();
         
-        if (productsError) throw productsError;
+        catData?.forEach(cat => {
+          const c = { id: cat.id, name: cat.name, slug: cat.slug, icon: cat.icon, bannerImage: cat.banner_image, parentId: cat.parent_id, sortOrder: cat.sort_order };
+          if (!cat.parent_id) {
+            parentMap.set(c.id, c);
+            if (!childrenMap.has(c.id)) childrenMap.set(c.id, []);
+          } else {
+            if (!childrenMap.has(cat.parent_id)) childrenMap.set(cat.parent_id, []);
+            childrenMap.get(cat.parent_id).push(c);
+          }
+        });
+
+        const nestedCategories = Array.from(parentMap.values()).map(parent => ({
+          ...parent,
+          children: (childrenMap.get(parent.id) || []).sort((a,b) => a.sortOrder - b.sortOrder)
+        })).sort((a,b) => a.sortOrder - b.sortOrder);
+
+        setCategories(nestedCategories);
+
+        if (frameError) {
+          console.log('Frame configs table might not exist yet.', frameError);
+        } else if (frameData) {
+          const activeFrames = frameData.filter(f => f.is_active === true || f.is_active === null || f.is_active === undefined);
+          const mappedConfigs = activeFrames.map(f => ({
+            id: f.id, type: f.type, name: f.name, value: f.value,
+            price: parseFloat(f.price) || 0, offerPrice: f.offer_price ? parseFloat(f.offer_price) : null,
+            thumbnailUrl: f.thumbnail_url, sortOrder: f.sort_order,
+          }));
+          setFrameConfigurations(mappedConfigs);
+        }
 
         // Map snake_case to camelCase
         const mappedProducts = (productsData || []).map(p => ({
@@ -63,6 +95,7 @@ export function EcomProvider({ children }) {
         console.error("Error loading e-commerce data:", err);
         setError(err.message);
       } finally {
+        console.log('[EcomContext] Finished loadData. Setting loading=false.');
         setLoading(false);
       }
     }
@@ -131,6 +164,7 @@ export function EcomProvider({ children }) {
   const value = {
     products,
     categories,
+    frameConfigurations,
     settings,
     loading,
     error,

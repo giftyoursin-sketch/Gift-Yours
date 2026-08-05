@@ -16,50 +16,25 @@ import '@business/styles/index.css'
 // ──────────────────────────────────────────────────────────────────────────────
 
 function RootApp() {
-  const hostname = window.location.hostname;
+  const isBusinessApp = window.location.pathname.startsWith('/business');
   
-  const isEcommerceVercel = hostname.includes('e-commerce');
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-  
-  if (isEcommerceVercel) {
+  if (isBusinessApp) {
     return (
-      <BrowserRouter>
+      <BrowserRouter basename="/business">
         <Routes>
-          <Route path="/*" element={<EcommerceApp />} />
+          <Route path="/*" element={<BusinessApp />} />
         </Routes>
       </BrowserRouter>
     );
   }
 
-  // During local development, serve E-commerce at root and Business at /business
-  if (isLocalhost) {
-    const isBusinessApp = window.location.pathname.startsWith('/business');
-    if (isBusinessApp) {
-      return (
-        <BrowserRouter basename="/business">
-          <Routes>
-            <Route path="/*" element={<BusinessApp />} />
-          </Routes>
-        </BrowserRouter>
-      );
-    }
-    return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/*" element={<EcommerceApp />} />
-        </Routes>
-      </BrowserRouter>
-    );
-  }
-
-  // Otherwise (for gift-yours.vercel.app), serve the Business Management app at the root
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/*" element={<BusinessApp />} />
+        <Route path="/*" element={<EcommerceApp />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 createRoot(document.getElementById('root')).render(

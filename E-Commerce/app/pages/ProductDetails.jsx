@@ -7,12 +7,13 @@ import { useAuth } from '../AuthContext';
 import SEO from '../../components/SEO';
 import { getProductImagePath, FALLBACK_IMAGE, toSlug } from '@shared/utils/imageUtils';
 import ProductCard from '@shared/components/ProductCard';
-import { ShoppingBag, Heart, Star, Truck, Shield, ArrowLeft, Plus, Minus, CheckCircle2, Share2 } from 'lucide-react';
+import { ShoppingBag, Heart, Star, Truck, Shield, ArrowLeft, Plus, Minus, CheckCircle2, Share2, Check } from 'lucide-react';
+import PhotoFrameCustomizer from '../../components/customizer/PhotoFrameCustomizer';
 
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, loading, settings, trackProductView, getProductReviews, submitReview } = useEcom();
+  const { products, loading, settings, trackProductView, getProductReviews, submitReview, frameConfigurations } = useEcom();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
@@ -90,6 +91,17 @@ export default function ProductDetails() {
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
+  const handleCustomizerAddToCart = (finalPrice, variantName, customData) => {
+    if (isOutOfStock) return;
+    // Overriding the product's price for this specific cart item
+    // If the user picked a different size, use that specific product from DB instead
+    const baseProduct = customData?.matchedProduct || product;
+    const customizedProduct = { ...baseProduct, price: finalPrice };
+    addToCart(customizedProduct, quantity, variantName);
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!user) return alert("Please log in to submit a review.");
@@ -133,6 +145,7 @@ export default function ProductDetails() {
         </Link>
       </div>
 
+      {/* Default Product View (Always Shown) */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', marginBottom: '4rem', alignItems: 'flex-start' }}>
         {/* Left: Image Gallery */}
         <div style={{ flex: '1 1 500px', display: 'flex', gap: '1rem', flexDirection: 'row-reverse' }}>
@@ -190,7 +203,7 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          <h1 className="h2" style={{ marginBottom: '1rem' }}>{product.name}</h1>
+          <h1 className="h2 font-premium" style={{ marginBottom: '1rem' }}>{product.name}</h1>
           
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', marginBottom: '2rem' }}>
             <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-text-main)', lineHeight: 1 }}>
@@ -310,6 +323,78 @@ export default function ProductDetails() {
 
         </div>
       </div>
+      {/* Conditionally Render Turn Your Photo Section & Customizer */}
+      {product.category?.toLowerCase().includes('photo frame') && (
+        <div id="photo-frame-customizer-section">
+          {/* Intro Section (Matching Reference Image 2) */}
+          <section style={{ marginBottom: '4rem', display: 'flex', flexWrap: 'wrap', gap: '4rem', alignItems: 'center' }}>
+            <div style={{ flex: '1 1 350px', maxWidth: '450px', margin: '0 auto' }}>
+              <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: 'var(--radius-xl)', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+                <img 
+                  src="/custom_frame_intro.png" 
+                  alt="Custom Photo Frame" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+              </div>
+            </div>
+            <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-text-main)', lineHeight: 1.2 }}>
+                Turn Your Photo Into a Custom Photo Frame
+              </h2>
+              <p style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--color-text-main)' }}>
+                Upload your photo and create a finished photo frame that is ready for your wall, your workspace, or to give as a gift.
+              </p>
+              <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
+                A photo frame should arrive finished, not as an empty frame you still have to fill. We print your photo and set it inside the frame, so what comes to your door is one ready-to-hang piece: family portraits, wedding pictures, baby photos, pet memories, travel shots or artwork. You can also frame several photos together as a framed photo collage.
+              </p>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '1rem', listStyle: 'none', padding: 0 }}>
+                <li style={{ display: 'flex', gap: '1rem' }}>
+                  <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>1.</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}><strong style={{ color: 'var(--color-text-main)' }}>Upload one photo, or several for a collage:</strong> start with a family photo, wedding picture, baby photo, pet portrait, travel memory, or artwork you want to display.</span>
+                </li>
+                <li style={{ display: 'flex', gap: '1rem' }}>
+                  <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>2.</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}><strong style={{ color: 'var(--color-text-main)' }}>We print and frame it as one piece:</strong> your photo or collage is printed and set inside your chosen wooden frame, delivered ready to hang.</span>
+                </li>
+                <li style={{ display: 'flex', gap: '1rem' }}>
+                  <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>3.</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}><strong style={{ color: 'var(--color-text-main)' }}>Customise the final look:</strong> choose the frame finish, the size from 8 to 54 inches, and a white margin or no margin around your photo.</span>
+                </li>
+                <li style={{ display: 'flex', gap: '1rem' }}>
+                  <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>4.</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}><strong style={{ color: 'var(--color-text-main)' }}>Use it for décor or gifting:</strong> create photo frames for your home, office, or as personalised photo gifts.</span>
+                </li>
+              </ul>
+              <div style={{ marginTop: '1rem' }}>
+                <button 
+                  className="btn"
+                  style={{ background: '#10B981', color: 'white', padding: '1rem 2rem', fontSize: '1.0625rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', border: 'none', borderRadius: 'var(--radius-md)' }}
+                  onClick={() => {
+                    document.getElementById('customizer-tool')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                >
+                  Create Your Photo Frame &rarr;
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* The actual Customizer Tool */}
+          <section id="customizer-tool" className="customizer-section" style={{ marginBottom: '4rem', background: 'var(--color-surface)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+              <h2 className="h2 font-premium">Design Your Frame</h2>
+              <p style={{ color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>Upload your photo to get started</p>
+            </div>
+            <PhotoFrameCustomizer 
+              product={product}
+              frameConfigurations={frameConfigurations || []}
+              onAddToCart={handleCustomizerAddToCart}
+              addedToCart={addedToCart}
+              isOutOfStock={isOutOfStock}
+            />
+          </section>
+        </div>
+      )}
 
       {/* Product Specifications - Moved below */}
       {tableRows.length > 0 && (
@@ -345,7 +430,7 @@ export default function ProductDetails() {
       {relatedProducts.length > 0 && (
         <section style={{ marginBottom: '4rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-            <h3 className="h3">You Might Also Like</h3>
+            <h3 className="h3 font-premium">You Might Also Like</h3>
             <Link to={`/category/${toSlug(product.category)}`} className="btn btn-ghost">View All</Link>
           </div>
           <div className="grid-cols-4">
@@ -359,7 +444,7 @@ export default function ProductDetails() {
       {/* Customer Reviews Section */}
       <section>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-          <h3 className="h3">Customer Reviews</h3>
+          <h3 className="h3 font-premium">Customer Reviews</h3>
           <button className="btn btn-outline" onClick={() => setShowReviewForm(!showReviewForm)}>
             Write a Review
           </button>

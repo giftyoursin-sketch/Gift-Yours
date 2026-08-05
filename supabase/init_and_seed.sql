@@ -22,6 +22,20 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS categories (
+  id TEXT PRIMARY KEY,
+  parent_id TEXT REFERENCES categories(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT,
+  icon TEXT,
+  banner_image TEXT,
+  sort_order INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS customers (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
@@ -97,6 +111,7 @@ CREATE TABLE IF NOT EXISTS settings (
 
 -- DISABLE Row Level Security
 ALTER TABLE products DISABLE ROW LEVEL SECURITY;
+ALTER TABLE categories DISABLE ROW LEVEL SECURITY;
 ALTER TABLE customers DISABLE ROW LEVEL SECURITY;
 ALTER TABLE sales DISABLE ROW LEVEL SECURITY;
 ALTER TABLE invoices DISABLE ROW LEVEL SECURITY;
@@ -122,7 +137,23 @@ INSERT INTO products (id, name, category, sku, description, purchase_price, sell
 VALUES
   ('prod-123', 'Custom Wooden Photo Frame', 'Photo Frames', 'FRM-001', 'Handcrafted wooden frame suitable for 8x10 photos', 250, 499, 50, 10, 'active'),
   ('prod-456', 'Personalized Coffee Mug', 'Personalized Gifts', 'MUG-001', 'Ceramic mug with custom print', 90, 299, 100, 20, 'active'),
-  ('prod-789', 'LED Crystal Keychain', 'Gift Items', 'KCH-001', 'Crystal keychain with color changing LED', 45, 150, 200, 30, 'active')
+  ('prod-789', 'LED Crystal Keychain', 'Keychains', 'KCH-001', 'Crystal keychain with color changing LED', 45, 150, 200, 30, 'active')
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert Categories
+INSERT INTO categories (id, name, slug, sort_order) VALUES
+  ('cat-photo-frames', 'Photo Frames', 'photo-frames', 1),
+  ('cat-gift-items', 'Gift Items', 'gift-items', 2),
+  ('cat-personalized-gifts', 'Personalized Gifts', 'personalized-gifts', 3),
+  ('cat-home-decor', 'Home Decor', 'home-decor', 4)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO categories (id, parent_id, name, slug, sort_order) VALUES
+  ('cat-pf-wooden', 'cat-photo-frames', 'Wooden Frames', 'wooden-frames', 1),
+  ('cat-pf-acrylic', 'cat-photo-frames', 'Acrylic Frames', 'acrylic-frames', 2),
+  ('cat-pf-led', 'cat-photo-frames', 'LED Frames', 'led-frames', 3),
+  ('cat-gi-mugs', 'cat-gift-items', 'Mugs', 'mugs', 1),
+  ('cat-gi-keychains', 'cat-gift-items', 'Keychains', 'keychains', 2)
 ON CONFLICT (id) DO NOTHING;
 
 -- Insert Customers

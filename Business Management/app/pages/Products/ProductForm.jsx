@@ -4,13 +4,11 @@ import { useApp } from '@business/app/AppContext';
 import { optimizeImage } from '@shared/utils/imageUtils';
 
 export default function ProductForm({ product, onClose, onSave }) {
-  const { settings } = useApp();
-  const categoriesList = (settings.productCategories || 'Photo Frames, Gift Items, Personalized Gifts, Home Decor, Photo Gifts, Customized Products, Other')
-    .split(',').map(c => c.trim()).filter(Boolean);
+  const { categories } = useApp();
 
   const [form, setForm] = useState({
     name: product?.name || '',
-    category: product?.category || categoriesList[0] || 'Other',
+    category: product?.category || '',
     sku: product?.sku || '',
     description: product?.description || '',
     purchasePrice: product?.purchasePrice || '',
@@ -84,7 +82,20 @@ export default function ProductForm({ product, onClose, onSave }) {
               <div className="input-group">
                 <label className="input-label">Category</label>
                 <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
-                  {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
+                  <option value="">Select a category</option>
+                  {(categories || []).filter(c => !c.parentId).map(parent => {
+                    const children = (categories || []).filter(c => c.parentId === parent.id);
+                    if (children.length === 0) {
+                      return <option key={parent.id} value={parent.name}>{parent.name}</option>;
+                    }
+                    return (
+                      <optgroup key={parent.id} label={parent.name}>
+                        {children.map(child => (
+                          <option key={child.id} value={`${parent.name} > ${child.name}`}>{child.name}</option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
                 </select>
               </div>
               <div className="input-group">

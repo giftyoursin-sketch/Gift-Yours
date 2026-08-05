@@ -8,7 +8,7 @@ export default function Footer() {
   const { settings, categories } = useEcom();
   const brandName = settings?.businessName || 'Gift Yours';
   const phone = settings?.phone || '+91 98765 43210';
-  const email = settings?.email || 'hello@giftyours.com';
+  const email = settings?.email || 'giftyours.in@gmail.com';
 
   return (
     <footer style={{
@@ -30,8 +30,20 @@ export default function Footer() {
             <p className="footer-brand-text" style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', marginBottom: '1.5rem', maxWidth: '280px' }}>
               Premium personalized gifts and frames for your loved ones. Make every moment special with {brandName}.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', color: 'var(--primary)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', color: 'var(--primary)' }}>
               <span className="footer-heading" style={{ fontSize: '0.875rem', fontWeight: 600 }}>Follow us on Social Media</span>
+              <a 
+                href="https://www.instagram.com/gift_yours.in?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
+                target="_blank" 
+                rel="noreferrer" 
+                style={{ color: 'var(--primary)', width: 'max-content', display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+              </a>
             </div>
           </div>
 
@@ -40,9 +52,9 @@ export default function Footer() {
             <h4 className="footer-heading" style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1.5rem' }}>Shop</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {categories.slice(0, 5).map(cat => (
-                <li key={cat}>
-                  <Link to={`/category/${toSlug(cat)}`} style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
-                    {cat}
+                <li key={cat.id}>
+                  <Link to={`/category/${cat.slug}`} style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
+                    {cat.name}
                   </Link>
                 </li>
               ))}
@@ -79,7 +91,11 @@ export default function Footer() {
               </li>
               <li className="footer-contact-item" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9375rem' }}>
                 <MapPin size={16} style={{ flexShrink: 0, marginTop: '0.25rem' }} /> 
-                <span>123 Gift Street, Design District, 400001</span>
+                <span style={{ lineHeight: '1.5' }}>
+                  Salapettai, Near Thirumathi<br />
+                  Vijayalakshmi Mahal, Pernambut Taluk,<br />
+                  Vellore Dist-635810
+                </span>
               </li>
             </ul>
             

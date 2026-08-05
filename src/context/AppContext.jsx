@@ -185,7 +185,7 @@ export function AppProvider({ children }) {
         });
       } catch (err) {
         console.error('Fatal load error:', err);
-        dispatch({ type: 'SET_DB_ERROR' });
+        dispatch({ type: 'SET_DB_ERROR', payload: err.message || err.toString() });
       }
     }
     loadAll();
