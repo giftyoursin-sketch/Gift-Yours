@@ -16,9 +16,37 @@ import '@business/styles/index.css'
 // ──────────────────────────────────────────────────────────────────────────────
 
 function RootApp() {
-  const isBusinessApp = window.location.pathname.startsWith('/business');
+  const hostname = window.location.hostname;
+  const isEcommerceDomain = hostname.includes('e-commerce') || hostname === 'giftyours.com';
+  const isBusinessDomain = hostname.includes('gift-yoursvercelapp') || hostname === 'business.giftyours.com';
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
   
-  if (isBusinessApp) {
+  // 1. If we are on the explicit Business domain, serve Business Manager at root
+  if (isBusinessDomain) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/*" element={<BusinessApp />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
+  // 2. If we are on the explicit E-commerce domain, serve E-Commerce at root
+  if (isEcommerceDomain) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/*" element={<EcommerceApp />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
+  // 3. For localhost (or fallback), path-based routing
+  const isBusinessPath = window.location.pathname.startsWith('/business');
+  
+  if (isBusinessPath) {
     return (
       <BrowserRouter basename="/business">
         <Routes>
