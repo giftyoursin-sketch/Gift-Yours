@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 
 const EcomContext = createContext(null);
@@ -177,7 +177,7 @@ export function EcomProvider({ children }) {
     }
   };
 
-  const value = {
+  const value = useMemo(() => ({
     products,
     categories,
     frameConfigurations,
@@ -187,7 +187,7 @@ export function EcomProvider({ children }) {
     trackProductView,
     getProductReviews,
     submitReview
-  };
+  }), [products, categories, frameConfigurations, settings, loading, error, trackProductView, getProductReviews, submitReview]);
 
   return (
     <EcomContext.Provider value={value}>

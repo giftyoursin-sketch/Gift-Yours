@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@supabaseClient';
 import { format } from 'date-fns';
 
@@ -605,9 +605,9 @@ export function AppProvider({ children }) {
       todayReceivedPayments, outstandingBalance, totalDueAmount,
       paidInvoicesCount, partiallyPaidInvoicesCount, unpaidInvoicesCount
     };
-  }, [state.sales, state.expenses, state.products]);
+  }, [state.sales, state.expenses, state.products, state.invoices]);
 
-  const value = {
+  const value = useMemo(() => ({
     ...state,
     // Categories
     addCategory, updateCategory, deleteCategory,
@@ -627,7 +627,18 @@ export function AppProvider({ children }) {
     saveSetting, saveSettings,
     // Utils
     getMetrics, notify, removeNotification, setGlobalMonth,
-  };
+  }), [
+    state,
+    addCategory, updateCategory, deleteCategory,
+    addProduct, updateProduct, deleteProduct, updateProductStock,
+    addCustomer, updateCustomer, deleteCustomer,
+    addSale, updateSale, deleteSale,
+    addInvoice, updateInvoice, deleteInvoice, receivePayment,
+    addExpense, updateExpense, deleteExpense,
+    addFrameConfig, updateFrameConfig, deleteFrameConfig,
+    saveSetting, saveSettings,
+    getMetrics, notify, removeNotification, setGlobalMonth
+  ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

@@ -35,10 +35,15 @@ export default function Dashboard() {
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const monthStr = format(new Date(), 'yyyy-MM');
-  const todaySalesList = sales.filter(s => s.date === todayStr);
-  const todayExpenseList = expenses.filter(e => e.date === todayStr);
-  const monthSalesList = sales.filter(s => s.date?.startsWith(monthStr));
-  const monthExpenseList = expenses.filter(e => e.date?.startsWith(monthStr));
+  
+  const { todaySalesList, todayExpenseList, monthSalesList, monthExpenseList } = useMemo(() => {
+    return {
+      todaySalesList: sales.filter(s => s.date === todayStr),
+      todayExpenseList: expenses.filter(e => e.date === todayStr),
+      monthSalesList: sales.filter(s => s.date?.startsWith(monthStr)),
+      monthExpenseList: expenses.filter(e => e.date?.startsWith(monthStr))
+    };
+  }, [sales, expenses, todayStr, monthStr]);
 
   // Build last 14 days chart data
   const chartData = useMemo(() => {
