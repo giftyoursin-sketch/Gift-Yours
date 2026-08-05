@@ -9,7 +9,7 @@ import { useApp } from '../../app/AppContext';
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const { state: { loading } } = useApp();
+  const { loading } = useApp();
 
   if (loading) {
     return (
