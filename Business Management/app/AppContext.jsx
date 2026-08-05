@@ -151,6 +151,7 @@ const initialState = {
   },
   notifications: [],
   loading: !cachedState, // if we have cache, don't show full loading screen
+  syncing: false,
   dbError: false,
   globalMonth: format(new Date(), 'yyyy-MM'),
 };
@@ -158,8 +159,9 @@ const initialState = {
 function reducer(state, action) {
   switch (action.type) {
     case 'LOAD_ALL': 
-      try { localStorage.setItem('business_app_cache', JSON.stringify({ ...state, ...action.payload, loading: false })); } catch(e) {}
-      return { ...state, ...action.payload, loading: false };
+      try { localStorage.setItem('business_app_cache', JSON.stringify({ ...state, ...action.payload, loading: false, syncing: false })); } catch(e) {}
+      return { ...state, ...action.payload, loading: false, syncing: false };
+    case 'SET_SYNCING': return { ...state, syncing: action.payload };
     case 'SET_PRODUCTS': return { ...state, products: action.payload };
     case 'SET_CATEGORIES': return { ...state, categories: action.payload };
     case 'SET_CUSTOMERS': return { ...state, customers: action.payload };
@@ -184,6 +186,7 @@ export function AppProvider({ children }) {
   // Load all data on mount
   useEffect(() => {
     async function loadAll() {
+      dispatch({ type: 'SET_SYNCING', payload: true });
       try {
         const results = await Promise.all([
           supabase.from('products').select('*').order('created_at', { ascending: false }),
@@ -240,6 +243,7 @@ export function AppProvider({ children }) {
       } catch (err) {
         console.error('Fatal load error:', err);
         dispatch({ type: 'SET_DB_ERROR', payload: err.message || err.toString() });
+        dispatch({ type: 'SET_SYNCING', payload: false });
       }
     }
     loadAll();

@@ -7,10 +7,11 @@ import { useCart } from '../../app/CartContext';
 import { useAuth } from '../../app/AuthContext';
 import { useWishlist } from '../../app/WishlistContext';
 export default function Header() {
-  const { settings, categories, loading } = useEcom();
+  const { settings, categories } = useEcom();
   const { itemTotal } = useCart();
   const { user } = useAuth();
   const { wishlist } = useWishlist();
+  const { syncing } = useEcom();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -190,7 +191,7 @@ export default function Header() {
             )}
           </form>
 
-          {loading && (
+          {syncing && (
             <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.25rem 0.5rem', background: 'var(--color-primary-alpha-10, rgba(234,88,12,0.1))', color: 'var(--color-primary, #EA580C)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
               <div style={{ width: 12, height: 12, border: '2px solid rgba(234,88,12,0.2)', borderTop: '2px solid var(--color-primary, #EA580C)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
               <span>Syncing...</span>

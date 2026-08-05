@@ -15,13 +15,15 @@ export function EcomProvider({ children }) {
   const [frameConfigurations, setFrameConfigurations] = useState(cached?.frameConfigurations || []);
   const [settings, setSettings] = useState(cached?.settings || {});
   const [loading, setLoading] = useState(!cached); // skip loader if cached
+  const [syncing, setSyncing] = useState(false); // for the background sync badge
   const [error, setError] = useState(null);
 
   useEffect(() => {
     async function loadData() {
       try {
         console.log('[EcomContext] Starting loadData...');
-        setLoading(true);
+        setSyncing(true);
+        if (!cached) setLoading(true);
 
         const [
           { data: settingsData, error: settingsError },
@@ -111,8 +113,9 @@ export function EcomProvider({ children }) {
         console.error("Error loading e-commerce data:", err);
         setError(err.message);
       } finally {
-        console.log('[EcomContext] Finished loadData. Setting loading=false.');
+        console.log('[EcomContext] Finished loadData. Setting loading/syncing=false.');
         setLoading(false);
+        setSyncing(false);
       }
     }
 
@@ -183,11 +186,12 @@ export function EcomProvider({ children }) {
     frameConfigurations,
     settings,
     loading,
+    syncing,
     error,
     trackProductView,
     getProductReviews,
     submitReview
-  }), [products, categories, frameConfigurations, settings, loading, error, trackProductView, getProductReviews, submitReview]);
+  }), [products, categories, frameConfigurations, settings, loading, syncing, error, trackProductView, getProductReviews, submitReview]);
 
   return (
     <EcomContext.Provider value={value}>
