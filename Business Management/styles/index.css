@@ -584,6 +584,19 @@ textarea.input { resize: vertical; min-height: 100px; }
     flex-direction: column;
     height: 100%; /* Equal height */
   }
+
+  .product-grid .product-info-row {
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+  }
+  .product-grid .product-image-container {
+    width: 100% !important;
+    height: 100px !important;
+  }
+  .product-grid .product-text-content {
+    padding-right: 0 !important;
+    width: 100%;
+  }
   
   /* Name truncation (2 lines max) */
   .product-grid .product-title { 
@@ -612,6 +625,7 @@ textarea.input { resize: vertical; min-height: 100px; }
     gap: 0.375rem !important; 
     margin-bottom: 0.5rem !important; 
     margin-top: auto; /* Push down to bottom so cards have equal height */
+    grid-template-columns: repeat(2, 1fr) !important;
   }
   .product-grid .price-box { 
     padding: 0.375rem !important; 

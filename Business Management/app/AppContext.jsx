@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@supabaseClient';
 import { format } from 'date-fns';
+import { openDB } from 'idb';
 
 const AppContext = createContext(null);
 
@@ -129,28 +130,22 @@ const frameConfigToDB = (f) => ({
   updated_at: new Date().toISOString(),
 });
 
-let cachedState = null;
-try {
-  const cached = localStorage.getItem('business_app_cache');
-  if (cached) cachedState = JSON.parse(cached);
-} catch (e) {}
-
 const initialState = {
-  products: cachedState?.products || [],
-  categories: cachedState?.categories || [],
-  customers: cachedState?.customers || [],
-  sales: cachedState?.sales || [],
-  invoices: cachedState?.invoices || [],
-  expenses: cachedState?.expenses || [],
-  stockHistory: cachedState?.stockHistory || [],
-  frameConfigurations: cachedState?.frameConfigurations || [],
-  settings: cachedState?.settings || {
+  products: [],
+  categories: [],
+  customers: [],
+  sales: [],
+  invoices: [],
+  expenses: [],
+  stockHistory: [],
+  frameConfigurations: [],
+  settings: {
     businessName: 'Gift Yours', phone: '', address: '',
     invoicePrefix: 'INV', currency: '₹', theme: 'light', nextInvoiceNumber: 1,
     expenseCategories: 'Salary, Rent, Utilities, Marketing, Supplies, Maintenance, Taxes, Other',
   },
   notifications: [],
-  loading: !cachedState, // if we have cache, don't show full loading screen
+  loading: true,
   syncing: false,
   dbError: false,
   globalMonth: format(new Date(), 'yyyy-MM'),
@@ -158,8 +153,9 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
+    case 'INIT_CACHE':
+      return { ...state, ...action.payload, loading: false };
     case 'LOAD_ALL': 
-      try { localStorage.setItem('business_app_cache', JSON.stringify({ ...state, ...action.payload, loading: false, syncing: false })); } catch(e) {}
       return { ...state, ...action.payload, loading: false, syncing: false };
     case 'SET_SYNCING': return { ...state, syncing: action.payload };
     case 'SET_PRODUCTS': return { ...state, products: action.payload };
@@ -186,6 +182,38 @@ export function AppProvider({ children }) {
   // Load all data on mount
   useEffect(() => {
     async function loadAll() {
+      // 1. Load from IDB cache first to populate UI instantly
+      try {
+        const db = await openDB('BusinessAppDB', 1, {
+          upgrade(db) {
+            if (!db.objectStoreNames.contains('cache')) {
+              db.createObjectStore('cache');
+            }
+          },
+        });
+        let cached = await db.get('cache', 'state');
+        
+        // MIGRATION: If idb is empty, try to salvage old localStorage cache
+        if (!cached) {
+          try {
+            const lsCache = localStorage.getItem('business_app_cache');
+            if (lsCache) {
+              cached = JSON.parse(lsCache);
+              // Save to idb for future so we don't have to parse localStorage again
+              await db.put('cache', cached, 'state');
+            }
+          } catch(e) {}
+        }
+
+        if (cached && Object.keys(cached).length > 0) {
+          dispatch({ type: 'INIT_CACHE', payload: cached });
+        } else {
+          dispatch({ type: 'INIT_CACHE', payload: {} });
+        }
+      } catch (e) {
+        dispatch({ type: 'INIT_CACHE', payload: {} });
+      }
+
       dispatch({ type: 'SET_SYNCING', payload: true });
       try {
         const results = await Promise.all([
@@ -222,9 +250,7 @@ export function AppProvider({ children }) {
         const settings = {};
         (settingsRows || []).forEach(s => { settings[s.key] = s.value; });
 
-        dispatch({
-          type: 'LOAD_ALL',
-          payload: {
+        const payload = {
             products: (products || []).map(productFromDB),
             categories: (categories || []).map(categoryFromDB),
             customers: (customers || []).map(customerFromDB),
@@ -238,8 +264,18 @@ export function AppProvider({ children }) {
               ...settings,
               nextInvoiceNumber: parseInt(settings.nextInvoiceNumber || '1'),
             },
-          },
+          };
+
+        dispatch({
+          type: 'LOAD_ALL',
+          payload,
         });
+
+        // 3. Save to IDB in background to prevent UI freeze
+        try {
+          const db = await openDB('BusinessAppDB', 1);
+          await db.put('cache', payload, 'state');
+        } catch(e) {}
       } catch (err) {
         console.error('Fatal load error:', err);
         dispatch({ type: 'SET_DB_ERROR', payload: err.message || err.toString() });

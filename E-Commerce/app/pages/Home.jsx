@@ -110,16 +110,7 @@ export default function Home() {
   }, [safeProducts, frame12x8]);
   const newArrivals = useMemo(() => safeProducts.slice(4, 8), [safeProducts]);
 
-  if (loading) {
-    return (
-      <div className="container section flex-center" style={{ minHeight: '60vh' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <div className="skeleton" style={{ width: 48, height: 48, borderRadius: '50%' }}></div>
-          <p style={{ color: 'var(--color-text-muted)' }}>Loading premium experience...</p>
-        </div>
-      </div>
-    );
-  }
+  // Removed the blocking loader to ensure instant page render
 
   return (
     <div>

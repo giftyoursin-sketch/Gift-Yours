@@ -109,8 +109,8 @@ export default function Products() {
                 <Package size={22} color="var(--primary)" />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
-                <div style={{ flex: 1, paddingRight: '0.5rem' }}>
+              <div className="product-info-row" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
+                <div className="product-text-content" style={{ flex: 1, paddingRight: '0.5rem' }}>
                   <h3 className="product-title" style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: '0.25rem' }}>{p.name}</h3>
                   {p.sku && <div className="product-sku" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>SKU: {p.sku}</div>}
                   {p.category && <div className="product-category" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{p.category}</div>}
@@ -137,6 +137,7 @@ export default function Products() {
                       src={p.imageUrl} 
                       alt={p.name} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      loading="lazy"
                     />
                   ) : (
                     <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>NO IMG</span>
@@ -146,12 +147,12 @@ export default function Products() {
 
               <div className="grid-2 product-price-row" style={{ gap: '0.75rem', marginBottom: '0.875rem' }}>
                 <div className="price-box" style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.625rem' }}>
-                  <div className="price-label" style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Selling</div>
-                  <div className="price-value" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)' }}>₹{p.sellingPrice || 0}</div>
+                  <div className="price-label" style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Raw</div>
+                  <div className="price-value" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-secondary)' }}>₹{p.purchasePrice || 0}</div>
                 </div>
                 <div className="price-box" style={{ background: 'var(--surface-2)', borderRadius: '8px', padding: '0.625rem' }}>
-                  <div className="price-label" style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Raw Material</div>
-                  <div className="price-value" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-secondary)' }}>₹{p.purchasePrice || 0}</div>
+                  <div className="price-label" style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Selling</div>
+                  <div className="price-value" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)' }}>₹{p.sellingPrice || 0}</div>
                 </div>
               </div>
 
