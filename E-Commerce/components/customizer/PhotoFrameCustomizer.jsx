@@ -146,8 +146,8 @@ export default function PhotoFrameCustomizer({
           onToggleView={() => setViewMode('3D')}
         />
       ) : (
-        <div style={{ flex: '1 1 420px', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-          <div style={{ width: '100%', height: '420px' }}>
+        <div style={{ flex: '1 1 480px', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ width: '100%', height: '560px' }}>
             <Customizer3DView 
               image={croppedImage || image}
               frameSize={selections.size}
@@ -157,8 +157,9 @@ export default function PhotoFrameCustomizer({
             />
           </div>
           <button 
-            onClick={() => setViewMode('2D')}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff', color: '#14b8a6', border: '1.5px solid #14b8a6', padding: '0.5rem 1.25rem', borderRadius: '999px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}
+            type="button"
+            onClick={(e) => { e.preventDefault(); setViewMode('2D'); }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff', color: '#14b8a6', border: '1.5px solid #14b8a6', padding: '0.5rem 1.25rem', borderRadius: '999px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', marginTop: '2rem' }}
           >
             ← Back to 2D
           </button>

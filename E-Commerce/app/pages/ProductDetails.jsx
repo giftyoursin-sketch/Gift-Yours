@@ -222,64 +222,86 @@ export default function ProductDetails() {
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', marginBottom: '2rem' }} />
 
-          {/* Variants */}
-          <div style={{ marginBottom: '2rem' }}>
-            <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '1rem' }}>Available Options</h4>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {['Standard', 'Premium'].map((opt) => (
-                <button 
-                  key={opt} 
-                  className={`btn ${selectedVariant === opt ? 'btn-primary' : 'btn-outline'}`} 
-                  style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)' }}
-                  onClick={() => setSelectedVariant(opt)}
-                >
-                  {opt}
-                </button>
-              ))}
+          {/* Variants - Hidden for now */}
+          {false && (
+            <div style={{ marginBottom: '2rem' }}>
+              <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '1rem' }}>Available Options</h4>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {['Standard', 'Premium'].map((opt) => (
+                  <button 
+                    key={opt} 
+                    className={`btn ${selectedVariant === opt ? 'btn-primary' : 'btn-outline'}`} 
+                    style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)' }}
+                    onClick={() => setSelectedVariant(opt)}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Actions - Hidden for now */}
+          {false && (
+            <div className="product-actions-wrapper" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem', alignItems: 'stretch' }}>
+              <div className="qty-control" style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-full)', padding: '0.25rem' }}>
+                <button className="btn-icon" onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus size={16} /></button>
+                <span style={{ width: '40px', textAlign: 'center', fontWeight: 600 }}>{quantity}</span>
+                <button className="btn-icon" onClick={() => setQuantity(quantity + 1)}><Plus size={16} /></button>
+              </div>
+              
+              <button 
+                className={`btn ${addedToCart ? 'btn-success' : 'btn-outline'} action-btn-add`} 
+                style={{ padding: '0 2rem', background: addedToCart ? 'var(--color-success)' : undefined, color: addedToCart ? '#fff' : undefined }} 
+                disabled={isOutOfStock}
+                onClick={handleAddToCart}
+              >
+                {addedToCart ? <CheckCircle2 size={20} /> : <ShoppingBag size={20} />}
+                <span className="desktop-only">{addedToCart ? 'Added to Cart' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
+              </button>
+
+              <button 
+                className="btn btn-primary action-btn-buy" 
+                style={{ padding: '0 3rem', fontSize: '1.0625rem', flex: 1 }}
+                disabled={isOutOfStock}
+                onClick={() => {
+                  if (isOutOfStock) return;
+                  addToCart(product, quantity, selectedVariant);
+                  navigate('/checkout');
+                }}
+              >
+                Buy Now
+              </button>
+              
+              <button 
+                className="btn btn-outline btn-icon action-btn-wishlist desktop-only" 
+                style={{ width: '56px', height: '56px', padding: 0, borderColor: isSaved ? 'var(--color-primary)' : 'var(--color-border)', color: isSaved ? 'var(--color-primary)' : 'inherit' }} 
+                onClick={() => toggleWishlist(product.id)}
+                title={isSaved ? "Remove from Wishlist" : "Add to Wishlist"}
+              >
+                <Heart size={20} fill={isSaved ? "currentColor" : "none"} />
+              </button>
+            </div>
+          )}
+
+          {/* Trust Badges - Moved Above WhatsApp */}
+          <div style={{ background: 'var(--color-bg-alt)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <Truck size={20} color="var(--color-text-muted)" />
+              <div>
+                <div style={{ fontSize: '0.9375rem', fontWeight: 600 }}>Free Shipping</div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>On orders over ₹999</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <Shield size={20} color="var(--color-text-muted)" />
+              <div>
+                <div style={{ fontSize: '0.9375rem', fontWeight: 600 }}>Secure Payment</div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>100% secure checkout</div>
+              </div>
             </div>
           </div>
 
-          {/* Actions */}
-          {/* Actions */}
-          <div className="product-actions-wrapper" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem', alignItems: 'stretch' }}>
-            <div className="qty-control" style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-full)', padding: '0.25rem' }}>
-              <button className="btn-icon" onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus size={16} /></button>
-              <span style={{ width: '40px', textAlign: 'center', fontWeight: 600 }}>{quantity}</span>
-              <button className="btn-icon" onClick={() => setQuantity(quantity + 1)}><Plus size={16} /></button>
-            </div>
-            
-            <button 
-              className={`btn ${addedToCart ? 'btn-success' : 'btn-outline'} action-btn-add`} 
-              style={{ padding: '0 2rem', background: addedToCart ? 'var(--color-success)' : undefined, color: addedToCart ? '#fff' : undefined }} 
-              disabled={isOutOfStock}
-              onClick={handleAddToCart}
-            >
-              {addedToCart ? <CheckCircle2 size={20} /> : <ShoppingBag size={20} />}
-              <span className="desktop-only">{addedToCart ? 'Added to Cart' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
-            </button>
-
-            <button 
-              className="btn btn-primary action-btn-buy" 
-              style={{ padding: '0 3rem', fontSize: '1.0625rem', flex: 1 }}
-              disabled={isOutOfStock}
-              onClick={() => {
-                if (isOutOfStock) return;
-                addToCart(product, quantity, selectedVariant);
-                navigate('/checkout');
-              }}
-            >
-              Buy Now
-            </button>
-            
-            <button 
-              className="btn btn-outline btn-icon action-btn-wishlist desktop-only" 
-              style={{ width: '56px', height: '56px', padding: 0, borderColor: isSaved ? 'var(--color-primary)' : 'var(--color-border)', color: isSaved ? 'var(--color-primary)' : 'inherit' }} 
-              onClick={() => toggleWishlist(product.id)}
-              title={isSaved ? "Remove from Wishlist" : "Add to Wishlist"}
-            >
-              <Heart size={20} fill={isSaved ? "currentColor" : "none"} />
-            </button>
-          </div>
           {/* Social Share & WhatsApp */}
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', justifyContent: 'flex-start' }}>
             <button 
@@ -298,27 +320,20 @@ export default function ProductDetails() {
               </svg>
               Enquire on WhatsApp
             </button>
-            <button className="btn btn-outline btn-icon" style={{ width: '56px', height: '56px', padding: 0, borderColor: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { navigator.clipboard.writeText(shareUrl); alert("Link copied to clipboard!"); }} title="Share Product">
+            <button className="btn btn-outline btn-icon" style={{ width: '56px', height: '56px', padding: 0, borderColor: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { 
+              if (navigator.share) {
+                navigator.share({
+                  title: product.name,
+                  text: shareMessage,
+                  url: shareUrl,
+                }).catch((error) => console.log('Error sharing', error));
+              } else {
+                navigator.clipboard.writeText(shareUrl); 
+                alert("Link copied to clipboard!"); 
+              }
+            }} title="Share Product">
               <Share2 size={20} />
             </button>
-          </div>
-
-          {/* Trust Badges */}
-          <div style={{ background: 'var(--color-bg-alt)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <Truck size={20} color="var(--color-text-muted)" />
-              <div>
-                <div style={{ fontSize: '0.9375rem', fontWeight: 600 }}>Free Shipping</div>
-                <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>On orders over ₹999</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <Shield size={20} color="var(--color-text-muted)" />
-              <div>
-                <div style={{ fontSize: '0.9375rem', fontWeight: 600 }}>Secure Payment</div>
-                <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>100% secure checkout</div>
-              </div>
-            </div>
           </div>
 
         </div>

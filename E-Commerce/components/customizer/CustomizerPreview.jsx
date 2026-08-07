@@ -175,7 +175,8 @@ export default function CustomizerPreview({
       {/* ── Bottom buttons ── */}
       <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
         <button
-          onClick={onToggleView}
+          type="button"
+          onClick={(e) => { e.preventDefault(); onToggleView(); }}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.375rem',
             background: '#fff', color: '#475569',
